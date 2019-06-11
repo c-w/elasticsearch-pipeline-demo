@@ -3,7 +3,7 @@ version: '3'
 services:
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.1.1
+    build: elasticsearch
     environment:
       - 'discovery.type=single-node'
       - 'http.port=9200'
@@ -18,13 +18,17 @@ services:
       - 9300:9300
 
   elasticsearch-init:
-    image: pstauffer/curl:v1.0.3
+    build: devtool
     command: >
-      curl --retry-connrefused --retry 20 --retry-delay 5 --retry-max-time 120
-      -w '(HTTP %{http_code})\n' -fs
-      -X PUT http://elasticsearch:9200/devindex
+      create-es-index --name devindex
+      create-es-pipeline --path /conf/ingestion.json
+    environment:
+      - ES_HOST=elasticsearch
+      - ES_PORT=9200
     links:
       - elasticsearch
+    volumes:
+      - ./conf:/conf
 
   dejavu:
     image: appbaseio/dejavu:3.3.1

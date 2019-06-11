@@ -1,7 +1,7 @@
 # Development setup
 
 ```bash
-docker-compose up
+docker-compose up --build
 ```
 
 ## Development links

@@ -1,0 +1,10 @@
+{
+  "description" : "Ingestion pipeline",
+  "processors" : [
+    {
+      "attachment" : {
+        "field" : "doc"
+      }
+    }
+  ]
+}
