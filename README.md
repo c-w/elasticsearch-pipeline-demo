@@ -1,8 +1,16 @@
-# Development setup
+## Development setup
+
+To get started, run the following snippet:
 
 ```bash
 docker-compose up --build
 ```
+
+The command will:
+
+- Start a single-node ElasticSearch deployment.
+- Set up an index and processing pipeline.
+- Ingest sample documents.
 
 ## Development links
 
