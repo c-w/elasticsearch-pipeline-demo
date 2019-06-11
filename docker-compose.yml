@@ -32,7 +32,7 @@ services:
     volumes:
       - ./conf:/conf
 
-  dejavu:
+  elasticsearch-ui:
     image: appbaseio/dejavu:3.3.1
     ports:
       - 1358:1358
