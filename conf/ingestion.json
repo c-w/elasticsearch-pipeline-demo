@@ -3,7 +3,8 @@
   "processors" : [
     {
       "attachment" : {
-        "field" : "doc"
+        "field" : "raw.doc",
+        "target_field": "doc"
       }
     }
   ]

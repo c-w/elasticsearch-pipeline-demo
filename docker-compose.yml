@@ -20,8 +20,10 @@ services:
   elasticsearch-init:
     build: devtool
     command: >
-      create-es-index --name devindex
+      create-es-index
       create-es-pipeline --path /conf/ingestion.json
+      create-es-document --path /conf/examples/hello.docx
+      create-es-document --path /conf/examples/hello.pdf
     environment:
       - ES_HOST=elasticsearch
       - ES_PORT=9200
