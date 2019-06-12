@@ -1,45 +1,44 @@
-/*
- * Copyright [2018] [Clemens Wolff]
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.elasticsearch.plugin.ingest.sentiment;
 
 import org.elasticsearch.ingest.IngestDocument;
-import org.elasticsearch.ingest.RandomDocumentPicks;
 import org.elasticsearch.test.ESTestCase;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
+import static org.elasticsearch.ingest.RandomDocumentPicks.randomIngestDocument;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 public class SentimentProcessorTests extends ESTestCase {
-
-    public void testThatProcessorWorks() throws Exception {
+    public void testThatProcessorAddsSentiment() {
         Map<String, Object> document = new HashMap<>();
-        document.put("source_field", "fancy source field content");
-        IngestDocument ingestDocument = RandomDocumentPicks.randomIngestDocument(random(), document);
+        document.put("doc_text", "What a great day!");
+        document.put("doc_lang", "en");
 
-        SentimentProcessor processor = new SentimentProcessor(randomAlphaOfLength(10), "source_field", "target_field");
+        SentimentProcessor processor = new SentimentProcessor(randomAlphaOfLength(10), "doc_text", "doc_lang", "sentiment",
+            (text, language) -> Optional.of(0.76));
+
+        IngestDocument ingestDocument = randomIngestDocument(random(), document);
         Map<String, Object> data = processor.execute(ingestDocument).getSourceAndMetadata();
 
-        assertThat(data, hasKey("target_field"));
-        assertThat(data.get("target_field"), is("fancy source field content"));
-        // TODO add fancy assertions here
+        assertThat(data, hasKey("sentiment"));
+        assertThat(data.get("sentiment"), is(0.76));
+    }
+
+    public void testThatProcessorDoesNotAddNullSentiment() {
+        Map<String, Object> document = new HashMap<>();
+        document.put("doc_text", "What a great day!");
+        document.put("doc_lang", "en");
+
+        SentimentProcessor processor = new SentimentProcessor(randomAlphaOfLength(10), "doc_text", "doc_lang", "sentiment",
+            (text, language) -> Optional.empty());
+
+        IngestDocument ingestDocument = randomIngestDocument(random(), document);
+        Map<String, Object> data = processor.execute(ingestDocument).getSourceAndMetadata();
+
+        assertThat(data, not(hasKey("sentiment")));
     }
 }
-

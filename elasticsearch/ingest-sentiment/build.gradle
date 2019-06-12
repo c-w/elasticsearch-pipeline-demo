@@ -6,7 +6,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.elasticsearch.gradle:build-tools:7.1.1"
+    classpath 'org.elasticsearch.gradle:build-tools:7.1.1'
   }
 }
 
@@ -17,40 +17,42 @@ apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'elasticsearch.esplugin'
 
-// license of this project
 licenseFile = rootProject.file('LICENSE.txt')
-// copyright notices
 noticeFile = rootProject.file('NOTICE.txt')
 
 esplugin {
   name 'ingest-sentiment'
   description 'Ingest processor that performs sentiment analysis'
   classname 'org.elasticsearch.plugin.ingest.sentiment.IngestSentimentPlugin'
-  // license of the plugin, may be different than the above license
   licenseFile rootProject.file('LICENSE.txt')
-  // copyright notices, may be different than the above notice
   noticeFile rootProject.file('NOTICE.txt')
 }
 
-// In this section you declare the dependencies for your production and test code
-// Note, the two dependencies are not really needed as the buildscript dependency gets them in already
-// they are just here as an example
 dependencies {
-  compile 'org.elasticsearch:elasticsearch:7.1.1'
-
-  testCompile 'org.elasticsearch.test:framework:7.1.1'
+  implementation 'com.google.code.gson:gson:2.8.5'
+  implementation 'org.apache.httpcomponents:httpclient:4.5.7'
 }
 
-// Set to false to not use elasticsearch checkstyle rules
+configurations.all {
+  resolutionStrategy.force 'commons-logging:commons-logging:1.2'
+}
+
 checkstyleMain.enabled = true
 checkstyleTest.enabled = true
 
-// FIXME dependency license check needs to be enabled
+loggerUsageCheck.enabled = false
 dependencyLicenses.enabled = false
-
-// FIXME thirdparty audit needs to be enabled
 thirdPartyAudit.enabled = false
+licenseHeaders.enabled = false
+integTest.enabled = false
+filepermissions.enabled = false
 
-// Uncomment this to skip license header checks
-// licenseHeaders.enabled = false
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
+task assembleZip(type: Zip) {
+  archiveClassifier.set('deploy')
+  from zipTree("${buildDir}/distributions/${rootProject.name}-${version}.zip".toString())
+  from configurations.default
+}
+assembleZip.dependsOn(assemble)

@@ -6,6 +6,15 @@
         "field" : "raw.doc",
         "target_field": "doc"
       }
+    },
+    {
+      "sentiment" : {
+        "azure_text_analytics_endpoint": "${AZURE_TEXT_ANALYTICS_ENDPOINT}",
+        "azure_text_analytics_key": "${AZURE_TEXT_ANALYTICS_KEY}",
+        "text_field" : "doc.content",
+        "language_field" : "doc.language",
+        "target_field": "sentiment"
+      }
     }
   ]
 }

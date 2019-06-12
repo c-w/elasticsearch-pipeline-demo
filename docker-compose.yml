@@ -27,6 +27,8 @@ services:
     environment:
       - ES_HOST=elasticsearch
       - ES_PORT=9200
+      - AZURE_TEXT_ANALYTICS_ENDPOINT=${AZURE_TEXT_ANALYTICS_ENDPOINT}
+      - AZURE_TEXT_ANALYTICS_KEY=${AZURE_TEXT_ANALYTICS_KEY}
     links:
       - elasticsearch
     volumes:

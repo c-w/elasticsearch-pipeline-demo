@@ -1,49 +1,40 @@
-/*
- * Copyright [2018] [Clemens Wolff]
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package org.elasticsearch.plugin.ingest.sentiment;
 
 import org.elasticsearch.ingest.AbstractProcessor;
 import org.elasticsearch.ingest.IngestDocument;
 import org.elasticsearch.ingest.Processor;
 
-import java.io.IOException;
+import java.net.URL;
 import java.util.Map;
+import java.util.Optional;
 
+import static org.elasticsearch.ingest.ConfigurationUtils.readIntProperty;
 import static org.elasticsearch.ingest.ConfigurationUtils.readStringProperty;
 
 public class SentimentProcessor extends AbstractProcessor {
+    static final String TYPE = "sentiment";
 
-    public static final String TYPE = "sentiment";
-
-    private final String field;
+    private final String textField;
+    private final String languageField;
     private final String targetField;
+    private final SentimentAnalysis textAnalyticsClient;
 
-    public SentimentProcessor(String tag, String field, String targetField) throws IOException {
+    SentimentProcessor(String tag, String textField, String languageField, String targetField, SentimentAnalysis textAnalyticsClient) {
         super(tag);
-        this.field = field;
+        this.textField = textField;
+        this.languageField = languageField;
         this.targetField = targetField;
+        this.textAnalyticsClient = textAnalyticsClient;
     }
 
     @Override
-    public IngestDocument execute(IngestDocument ingestDocument) throws Exception {
-        String content = ingestDocument.getFieldValue(field, String.class);
-        // TODO implement me!
-        ingestDocument.setFieldValue(targetField, content);
+    public IngestDocument execute(IngestDocument ingestDocument) {
+        String text = ingestDocument.getFieldValue(textField, String.class);
+        String language = ingestDocument.getFieldValue(languageField, String.class);
+
+        Optional<Double> sentiment = textAnalyticsClient.fetchSentiment(text, language);
+        sentiment.ifPresent(score -> ingestDocument.setFieldValue(targetField, score));
+
         return ingestDocument;
     }
 
@@ -53,14 +44,23 @@ public class SentimentProcessor extends AbstractProcessor {
     }
 
     public static final class Factory implements Processor.Factory {
-
         @Override
-        public SentimentProcessor create(Map<String, Processor.Factory> factories, String tag, Map<String, Object> config) 
+        public SentimentProcessor create(Map<String, Processor.Factory> factories, String tag, Map<String, Object> config)
             throws Exception {
-            String field = readStringProperty(TYPE, tag, config, "field");
-            String targetField = readStringProperty(TYPE, tag, config, "target_field", "default_field_name");
 
-            return new SentimentProcessor(tag, field, targetField);
+            String textField = readStringProperty(TYPE, tag, config, "text_field");
+            String languageField = readStringProperty(TYPE, tag, config, "language_field");
+            String azureTextAnalyticsEndpoint = readStringProperty(TYPE, tag, config, "azure_text_analytics_endpoint");
+            String azureTextAnalyticsKey = readStringProperty(TYPE, tag, config, "azure_text_analytics_key");
+            String targetField = readStringProperty(TYPE, tag, config, "target_field", "sentiment");
+            Integer timeoutSeconds = readIntProperty(TYPE, tag, config, "timeout_seconds", 5);
+
+            SentimentAnalysis azureTextAnalyticsClient = new AzureTextAnalyticsClient(
+                new JsonHttpClient(timeoutSeconds),
+                azureTextAnalyticsKey,
+                new URL(azureTextAnalyticsEndpoint));
+
+            return new SentimentProcessor(tag, textField, languageField, targetField, azureTextAnalyticsClient);
         }
     }
 }

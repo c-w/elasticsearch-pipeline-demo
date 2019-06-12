@@ -1,5 +1,6 @@
 from base64 import b64encode
 from glob import iglob
+from os.path import expandvars
 from pathlib import Path
 import json
 import shlex
@@ -9,6 +10,7 @@ from environs import Env
 from invoke import task
 
 _ENV = Env()
+_ENV.read_env()
 
 ES_HOST = _ENV("ES_HOST", "localhost")
 ES_PORT = _ENV.int("ES_PORT", 9200)
@@ -35,7 +37,7 @@ def create_es_pipeline(_, path, name=ES_PIPELINE, host=ES_HOST, port=ES_PORT):
     path = Path(path)
     client = Elasticsearch([{"host": host, "port": port}])
 
-    pipeline = json.loads(path.read_text(encoding="utf-8"))
+    pipeline = json.loads(expandvars(path.read_text(encoding="utf-8")))
 
     client.ingest.put_pipeline(name, pipeline)
 

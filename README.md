@@ -1,6 +1,8 @@
 ## Development setup
 
-To get started, run the following snippet:
+To get started, copy `.env.template` to `.env` and set the required configuration values.
+
+Then, run the following snippet:
 
 ```bash
 docker-compose up --build
