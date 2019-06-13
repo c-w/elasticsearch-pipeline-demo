@@ -19,13 +19,13 @@ public class TextAnalyticsProcessor extends AbstractProcessor {
 
     private final InputFields inputFields;
     private final OutputFields outputFields;
-    private final TextAnalytics textAnalyticsClient;
+    private final TextAnalytics textAnalytics;
 
-    TextAnalyticsProcessor(String tag, InputFields inputFields, OutputFields outputFields, TextAnalytics textAnalyticsClient) {
+    TextAnalyticsProcessor(String tag, InputFields inputFields, OutputFields outputFields, TextAnalytics textAnalytics) {
         super(tag);
         this.inputFields = inputFields;
         this.outputFields = outputFields;
-        this.textAnalyticsClient = textAnalyticsClient;
+        this.textAnalytics = textAnalytics;
     }
 
     @Override
@@ -33,10 +33,10 @@ public class TextAnalyticsProcessor extends AbstractProcessor {
         String text = ingestDocument.getFieldValue(inputFields.getTextField(), String.class);
         String language = ingestDocument.getFieldValue(inputFields.getLanguageField(), String.class);
 
-        Optional<Double> sentiment = textAnalyticsClient.fetchSentiment(text, language);
+        Optional<Double> sentiment = textAnalytics.fetchSentiment(text, language);
         sentiment.ifPresent(score -> ingestDocument.setFieldValue(outputFields.getSentimentField(), score));
 
-        List<String> keyPhrases = textAnalyticsClient.fetchKeyPhrases(text, language);
+        List<String> keyPhrases = textAnalytics.fetchKeyPhrases(text, language);
         if (!keyPhrases.isEmpty()) {
             ingestDocument.setFieldValue(outputFields.getKeyPhrasesField(), keyPhrases);
         }
