@@ -17,33 +17,28 @@ import static org.elasticsearch.ingest.ConfigurationUtils.readStringProperty;
 public class TextAnalyticsProcessor extends AbstractProcessor {
     static final String TYPE = "textanalytics";
 
-    private final String textField;
-    private final String languageField;
-    private final String keyPhrasesField;
-    private final String sentimentField;
+    private final InputFields inputFields;
+    private final OutputFields outputFields;
     private final TextAnalytics textAnalyticsClient;
 
-    TextAnalyticsProcessor(String tag, String textField, String languageField, String keyPhrasesField, String sentimentField,
-                           TextAnalytics textAnalyticsClient) {
+    TextAnalyticsProcessor(String tag, InputFields inputFields, OutputFields outputFields, TextAnalytics textAnalyticsClient) {
         super(tag);
-        this.textField = textField;
-        this.languageField = languageField;
-        this.keyPhrasesField = keyPhrasesField;
-        this.sentimentField = sentimentField;
+        this.inputFields = inputFields;
+        this.outputFields = outputFields;
         this.textAnalyticsClient = textAnalyticsClient;
     }
 
     @Override
     public IngestDocument execute(IngestDocument ingestDocument) {
-        String text = ingestDocument.getFieldValue(textField, String.class);
-        String language = ingestDocument.getFieldValue(languageField, String.class);
+        String text = ingestDocument.getFieldValue(inputFields.getTextField(), String.class);
+        String language = ingestDocument.getFieldValue(inputFields.getLanguageField(), String.class);
 
         Optional<Double> sentiment = textAnalyticsClient.fetchSentiment(text, language);
-        sentiment.ifPresent(score -> ingestDocument.setFieldValue(sentimentField, score));
+        sentiment.ifPresent(score -> ingestDocument.setFieldValue(outputFields.getSentimentField(), score));
 
         List<String> keyPhrases = textAnalyticsClient.fetchKeyPhrases(text, language);
         if (!keyPhrases.isEmpty()) {
-            ingestDocument.setFieldValue(keyPhrasesField, keyPhrases);
+            ingestDocument.setFieldValue(outputFields.getKeyPhrasesField(), keyPhrases);
         }
 
         return ingestDocument;
@@ -59,21 +54,22 @@ public class TextAnalyticsProcessor extends AbstractProcessor {
         public TextAnalyticsProcessor create(Map<String, Processor.Factory> factories, String tag, Map<String, Object> config)
             throws Exception {
 
-            String textField = readStringProperty(TYPE, tag, config, "text_field");
-            String languageField = readStringProperty(TYPE, tag, config, "language_field");
-            String keyPhrasesField = readStringProperty(TYPE, tag, config, "key_phrases_field", "key_phrases");
-            String sentimentField = readStringProperty(TYPE, tag, config, "sentiment_field", "sentiment");
-            Integer timeoutSeconds = readIntProperty(TYPE, tag, config, "timeout_seconds", 5);
-
-            String azureTextAnalyticsEndpoint = readEnv(tag, "AZURE_TEXT_ANALYTICS_ENDPOINT");
-            String azureTextAnalyticsKey = readEnv(tag, "AZURE_TEXT_ANALYTICS_KEY");
+            JsonHttpClient httpClient = new JsonHttpClient(readIntProperty(TYPE, tag, config, "timeout_seconds", 5));
 
             TextAnalytics azureTextAnalyticsClient = new AzureTextAnalyticsClient(
-                new JsonHttpClient(timeoutSeconds),
-                azureTextAnalyticsKey,
-                new URL(azureTextAnalyticsEndpoint));
+                httpClient,
+                readEnv(tag, "AZURE_TEXT_ANALYTICS_KEY"),
+                new URL(readEnv(tag, "AZURE_TEXT_ANALYTICS_ENDPOINT")));
 
-            return new TextAnalyticsProcessor(tag, textField, languageField, keyPhrasesField, sentimentField, azureTextAnalyticsClient);
+            InputFields inputFields = new InputFields(
+                readStringProperty(TYPE, tag, config, "text_field", null),
+                readStringProperty(TYPE, tag, config, "language_field", null));
+
+            OutputFields outputFields = new OutputFields(
+                readStringProperty(TYPE, tag, config, "key_phrases_field", "key_phrases"),
+                readStringProperty(TYPE, tag, config, "sentiment_field", "sentiment"));
+
+            return new TextAnalyticsProcessor(tag, inputFields, outputFields, azureTextAnalyticsClient);
         }
 
         private static String readEnv(String tag, String key) {

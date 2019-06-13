@@ -15,24 +15,26 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 public class TextAnalyticsProcessorTests extends ESTestCase {
+    private static final InputFields INPUT_FIELDS = new InputFields("doc_text", "doc_lang");
+    private static final OutputFields OUTPUT_FIELDS = new OutputFields("key_phrases", "sentiment");
+
     public void testThatProcessorAddsSentiment() {
         Map<String, Object> document = new HashMap<>();
         document.put("doc_text", "What a great day!");
         document.put("doc_lang", "en");
 
-        TextAnalyticsProcessor processor = new TextAnalyticsProcessor(randomAlphaOfLength(10), "doc_text", "doc_lang", "key_phrases",
-            "sentiment",
+        TextAnalyticsProcessor processor = new TextAnalyticsProcessor(randomAlphaOfLength(10), INPUT_FIELDS, OUTPUT_FIELDS,
             new TextAnalytics() {
-            @Override
-            public Optional<Double> fetchSentiment(String text, String language) {
-                return Optional.of(0.76);
-            }
+                @Override
+                public Optional<Double> fetchSentiment(String text, String language) {
+                    return Optional.of(0.76);
+                }
 
-            @Override
-            public List<String> fetchKeyPhrases(String text, String language) {
-                return emptyList();
-            }
-        });
+                @Override
+                public List<String> fetchKeyPhrases(String text, String language) {
+                    return emptyList();
+                }
+            });
 
         IngestDocument ingestDocument = randomIngestDocument(random(), document);
         Map<String, Object> data = processor.execute(ingestDocument).getSourceAndMetadata();
@@ -46,19 +48,18 @@ public class TextAnalyticsProcessorTests extends ESTestCase {
         document.put("doc_text", "What a great day!");
         document.put("doc_lang", "en");
 
-        TextAnalyticsProcessor processor = new TextAnalyticsProcessor(randomAlphaOfLength(10), "doc_text", "doc_lang", "key_phrases",
-            "sentiment",
+        TextAnalyticsProcessor processor = new TextAnalyticsProcessor(randomAlphaOfLength(10), INPUT_FIELDS, OUTPUT_FIELDS,
             new TextAnalytics() {
-            @Override
-            public Optional<Double> fetchSentiment(String text, String language) {
-                return Optional.empty();
-            }
+                @Override
+                public Optional<Double> fetchSentiment(String text, String language) {
+                    return Optional.empty();
+                }
 
-            @Override
-            public List<String> fetchKeyPhrases(String text, String language) {
-                return emptyList();
-            }
-        });
+                @Override
+                public List<String> fetchKeyPhrases(String text, String language) {
+                    return emptyList();
+                }
+            });
 
         IngestDocument ingestDocument = randomIngestDocument(random(), document);
         Map<String, Object> data = processor.execute(ingestDocument).getSourceAndMetadata();
