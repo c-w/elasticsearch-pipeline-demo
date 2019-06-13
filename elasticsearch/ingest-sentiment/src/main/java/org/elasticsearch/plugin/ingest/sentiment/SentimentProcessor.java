@@ -8,6 +8,8 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.lang.System.getenv;
+import static org.elasticsearch.ingest.ConfigurationUtils.newConfigurationException;
 import static org.elasticsearch.ingest.ConfigurationUtils.readIntProperty;
 import static org.elasticsearch.ingest.ConfigurationUtils.readStringProperty;
 
@@ -50,10 +52,11 @@ public class SentimentProcessor extends AbstractProcessor {
 
             String textField = readStringProperty(TYPE, tag, config, "text_field");
             String languageField = readStringProperty(TYPE, tag, config, "language_field");
-            String azureTextAnalyticsEndpoint = readStringProperty(TYPE, tag, config, "azure_text_analytics_endpoint");
-            String azureTextAnalyticsKey = readStringProperty(TYPE, tag, config, "azure_text_analytics_key");
             String targetField = readStringProperty(TYPE, tag, config, "target_field", "sentiment");
             Integer timeoutSeconds = readIntProperty(TYPE, tag, config, "timeout_seconds", 5);
+
+            String azureTextAnalyticsEndpoint = readEnv(tag, "AZURE_TEXT_ANALYTICS_ENDPOINT");
+            String azureTextAnalyticsKey = readEnv(tag, "AZURE_TEXT_ANALYTICS_KEY");
 
             SentimentAnalysis azureTextAnalyticsClient = new AzureTextAnalyticsClient(
                 new JsonHttpClient(timeoutSeconds),
@@ -61,6 +64,16 @@ public class SentimentProcessor extends AbstractProcessor {
                 new URL(azureTextAnalyticsEndpoint));
 
             return new SentimentProcessor(tag, textField, languageField, targetField, azureTextAnalyticsClient);
+        }
+
+        private static String readEnv(String tag, String key) {
+            String value = getenv(key);
+
+            if (value == null || value.isEmpty()) {
+                throw newConfigurationException(TYPE, tag, key, "required environment variable is missing");
+            }
+
+            return value;
         }
     }
 }

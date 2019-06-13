@@ -11,8 +11,6 @@ PUT _ingest/pipeline/sentiment-pipeline
   "processors": [
     {
       "sentiment" : {
-        "azure_text_analytics_endpoint" : "https://$LOCATION.api.cognitive.microsoft.com",
-        "azure_text_analytics_key" : "$ACCESS_KEY",
         "text_field" : "doc_text",
         "language_field" : "doc_lang"
       }
@@ -49,14 +47,21 @@ GET /my-index/my-type/2
 
 ## Configuration
 
+### Pipeline parameters
+
 | Parameter | Required | Default | Description |
 | --------- | -------- | ------- | ----------- |
 | text_field | yes | - | The field from which to get the document text |
 | language_field | yes | - | The field from which to get the document language |
-| azure_text_analytics_endpoint | yes | - | Endpoint for the Azure text analytics service |
-| azure_text_analytics_key | yes | - | Access key for the Azure text analytics service |
 | target_field | no | sentiment | The field that will hold the sentiment score |
 | timeout_seconds | no | 5 | The timeout for text analytics requests |
+
+### Node environment variables
+
+| Environment variable | Required | Default | Description |
+| -------------------- | -------- | ------- | ----------- |
+| AZURE_TEXT_ANALYTICS_ENDPOINT | yes | - | Endpoint for the Azure text analytics service |
+| AZURE_TEXT_ANALYTICS_KEY | yes | - | Access key for the Azure text analytics service |
 
 ## Setup
 

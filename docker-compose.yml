@@ -13,6 +13,8 @@ services:
       http.cors.allow-credentials: 'true'
       bootstrap.memory_lock: 'true'
       ES_JAVA_OPTS: '-Xms512m -Xmx512m'
+      AZURE_TEXT_ANALYTICS_ENDPOINT: 'http://textanalytics-sentiment:5000'
+      AZURE_TEXT_ANALYTICS_KEY: 'not-used'
     ports:
       - 9200:9200
       - 9300:9300
@@ -31,8 +33,6 @@ services:
       ES_PORT: '9200'
       ES_INDEX: '${ELASTIC_SEARCH_INDEX_NAME}'
       ES_PIPELINE: '${ELASTIC_SEARCH_PIPELINE_NAME}'
-      AZURE_TEXT_ANALYTICS_ENDPOINT: 'http://textanalytics-sentiment:5000'
-      AZURE_TEXT_ANALYTICS_KEY: 'not-used'
       AZURE_STORAGE_CONNECTION_STRING: '${AZURE_STORAGE_CONNECTION_STRING}'
       AZURE_STORAGE_CONTAINER: '${AZURE_STORAGE_CONTAINER}'
     links:
