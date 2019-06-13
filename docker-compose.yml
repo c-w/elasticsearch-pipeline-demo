@@ -22,8 +22,8 @@ services:
     command: >
       create-es-index
       create-es-pipeline --path /app/ingestion.json
-      create-es-document --container ${AZURE_STORAGE_CONTAINER} --blob hello.docx
-      create-es-document --container ${AZURE_STORAGE_CONTAINER} --blob hello.pdf
+      create-es-document --blob hello.docx
+      create-es-document --blob hello.pdf
     environment:
       ES_HOST: 'elasticsearch'
       ES_PORT: '9200'
@@ -32,6 +32,7 @@ services:
       AZURE_TEXT_ANALYTICS_ENDPOINT: '${AZURE_TEXT_ANALYTICS_ENDPOINT}'
       AZURE_TEXT_ANALYTICS_KEY: '${AZURE_TEXT_ANALYTICS_KEY}'
       AZURE_STORAGE_CONNECTION_STRING: '${AZURE_STORAGE_CONNECTION_STRING}'
+      AZURE_STORAGE_CONTAINER: '${AZURE_STORAGE_CONTAINER}'
     links:
       - azurestorage
       - elasticsearch

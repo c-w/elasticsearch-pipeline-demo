@@ -18,6 +18,7 @@ ES_PORT = _ENV.int("ES_PORT", 9200)
 ES_PIPELINE = _ENV("ES_PIPELINE", "")
 ES_INDEX = _ENV("ES_INDEX", "")
 
+STORAGE_CONTAINER = _ENV("AZURE_STORAGE_CONTAINER", "")
 STORAGE_CONNECTION_STRING = _ENV("AZURE_STORAGE_CONNECTION_STRING", "")
 
 
@@ -48,23 +49,23 @@ def create_es_pipeline(_, path, name=ES_PIPELINE, host=ES_HOST, port=ES_PORT):
 @task
 def create_es_document(
     _,
-    container,
     blob,
     index=ES_INDEX,
     pipeline=ES_PIPELINE,
     host=ES_HOST,
     port=ES_PORT,
+    storage_container=STORAGE_CONTAINER,
     storage_connection_string=STORAGE_CONNECTION_STRING,
 ):
     storage_client = BlockBlobService(connection_string=storage_connection_string)
-    blob = storage_client.get_blob_to_bytes(container, blob)
+    blob = storage_client.get_blob_to_bytes(storage_container, blob)
 
     client = Elasticsearch([{"host": host, "port": port}])
 
     body = {
         "raw": {
             "doc": b64encode(blob.content).decode("ascii"),
-            "source": storage_client.make_blob_url(container, blob.name),
+            "source": storage_client.make_blob_url(storage_container, blob.name),
         }
     }
 
