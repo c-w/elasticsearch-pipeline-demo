@@ -13,7 +13,7 @@ services:
       http.cors.allow-credentials: 'true'
       bootstrap.memory_lock: 'true'
       ES_JAVA_OPTS: '-Xms512m -Xmx512m'
-      AZURE_TEXT_ANALYTICS_ENDPOINT: 'http://textanalytics-sentiment:5000'
+      AZURE_TEXT_ANALYTICS_ENDPOINT: 'http://textanalytics:5000'
       AZURE_TEXT_ANALYTICS_KEY: 'not-used'
     ports:
       - 9200:9200
@@ -44,11 +44,24 @@ services:
     ports:
       - 1358:1358
 
+  textanalytics:
+    build: textanalytics
+    ports:
+      - 5000:5000
+    links:
+      - textanalytics-sentiment
+
   textanalytics-sentiment:
     image: mcr.microsoft.com/azure-cognitive-services/sentiment:latest
     command: ["Eula=accept", "Billing=${AZURE_TEXT_ANALYTICS_ENDPOINT}", "ApiKey=${AZURE_TEXT_ANALYTICS_KEY}"]
     ports:
-      - 5000:5000
+      - 5001:5000
+
+  textanalytics-keyphrases:
+    image: mcr.microsoft.com/azure-cognitive-services/keyphrase:latest
+    command: ["Eula=accept", "Billing=${AZURE_TEXT_ANALYTICS_ENDPOINT}", "ApiKey=${AZURE_TEXT_ANALYTICS_KEY}"]
+    ports:
+      - 5002:5000
 
   azurestorage:
     image: arafato/azurite:2.6.5
