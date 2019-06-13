@@ -1,8 +1,6 @@
 package org.elasticsearch.plugin.ingest.textanalytics;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
@@ -12,16 +10,13 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.elasticsearch.SpecialPermission;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Map;
-import java.util.Scanner;
 
 class JsonHttpClient {
-    private static final JsonParser JSON = new JsonParser();
     private final HttpClient httpClient;
     private final RequestConfig requestConfig;
 
@@ -49,31 +44,13 @@ class JsonHttpClient {
     }
 
     private JsonElement executeJsonRequest(HttpUriRequest request) throws IOException {
-        HttpResponse response = executeRawRequest(request);
-
-        String responseBody = readResponseBody(response);
-        int status = response.getStatusLine().getStatusCode();
-        if (status != 200) {
-            throw new RuntimeException("HTTP " + status + "(" + responseBody + ")");
-        }
-
-        return JSON.parse(responseBody);
-    }
-
-    private HttpResponse executeRawRequest(HttpUriRequest request) throws IOException {
         SpecialPermission.check();
 
         try {
-            return AccessController.doPrivileged((PrivilegedExceptionAction<HttpResponse>) () -> httpClient.execute(request));
+            return AccessController.doPrivileged((PrivilegedExceptionAction<JsonElement>) () ->
+                httpClient.execute(request, new JsonResponseHandler()));
         } catch (PrivilegedActionException e) {
             throw (IOException) e.getCause();
-        }
-    }
-
-    private String readResponseBody(HttpResponse response) throws IOException {
-        try (InputStream responseStream = response.getEntity().getContent()) {
-            Scanner scanner = new Scanner(responseStream, "UTF-8").useDelimiter("\\A");
-            return scanner.hasNext() ? scanner.next() : "";
         }
     }
 }
