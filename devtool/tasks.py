@@ -19,6 +19,7 @@ ES_HOST = _ENV("ES_HOST", "localhost")
 ES_PORT = _ENV.int("ES_PORT", 9200)
 ES_PIPELINE = _ENV("ES_PIPELINE", "")
 ES_INDEX = _ENV("ES_INDEX", "")
+ES_TIMEOUT = _ENV.int("ES_TIMEOUT_SECONDS", 120)
 
 STORAGE_CONTAINER = _ENV("AZURE_STORAGE_CONTAINER", "")
 STORAGE_CONNECTION_STRING = _ENV("AZURE_STORAGE_CONNECTION_STRING", "")
@@ -32,7 +33,7 @@ def lint(context):
 
 
 def wait_for_elasticsearch(host, port):
-    client = Elasticsearch([{"host": host, "port": port}])
+    client = Elasticsearch([{"host": host, "port": port}], timeout=ES_TIMEOUT)
 
     connected = False
     while not connected:

@@ -1,12 +1,15 @@
 package org.elasticsearch.plugin.ingest.textanalytics;
 
 import com.google.gson.JsonElement;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.protocol.HttpContext;
 import org.elasticsearch.SpecialPermission;
 
 import java.io.IOException;
@@ -27,6 +30,18 @@ class JsonHttpClient {
 
     JsonHttpClient(int timeoutSeconds) {
         this(HttpClientBuilder.create()
+                .setServiceUnavailableRetryStrategy(new ServiceUnavailableRetryStrategy() {
+                    @Override
+                    public boolean retryRequest(HttpResponse response, int executionCount, HttpContext context) {
+                        int statusCode = response.getStatusLine().getStatusCode();
+                        return statusCode == 502;
+                    }
+
+                    @Override
+                    public long getRetryInterval() {
+                        return 1000;
+                    }
+                })
                 .build(),
             RequestConfig.custom()
                 .setConnectionRequestTimeout(timeoutSeconds * 1000)
