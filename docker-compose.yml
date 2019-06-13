@@ -16,6 +16,8 @@ services:
     ports:
       - 9200:9200
       - 9300:9300
+    links:
+      - textanalytics-sentiment
 
   elasticsearch-init:
     build: devtool
@@ -29,8 +31,8 @@ services:
       ES_PORT: '9200'
       ES_INDEX: '${ELASTIC_SEARCH_INDEX_NAME}'
       ES_PIPELINE: '${ELASTIC_SEARCH_PIPELINE_NAME}'
-      AZURE_TEXT_ANALYTICS_ENDPOINT: '${AZURE_TEXT_ANALYTICS_ENDPOINT}'
-      AZURE_TEXT_ANALYTICS_KEY: '${AZURE_TEXT_ANALYTICS_KEY}'
+      AZURE_TEXT_ANALYTICS_ENDPOINT: 'http://textanalytics-sentiment:5000'
+      AZURE_TEXT_ANALYTICS_KEY: 'not-used'
       AZURE_STORAGE_CONNECTION_STRING: '${AZURE_STORAGE_CONNECTION_STRING}'
       AZURE_STORAGE_CONTAINER: '${AZURE_STORAGE_CONTAINER}'
     links:
@@ -41,6 +43,12 @@ services:
     image: appbaseio/dejavu:3.3.1
     ports:
       - 1358:1358
+
+  textanalytics-sentiment:
+    image: mcr.microsoft.com/azure-cognitive-services/sentiment:latest
+    command: ["Eula=accept", "Billing=${AZURE_TEXT_ANALYTICS_ENDPOINT}", "ApiKey=${AZURE_TEXT_ANALYTICS_KEY}"]
+    ports:
+      - 5000:5000
 
   azurestorage:
     image: arafato/azurite:2.6.5
