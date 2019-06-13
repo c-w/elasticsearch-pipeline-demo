@@ -1,4 +1,4 @@
-package org.elasticsearch.plugin.ingest.sentiment;
+package org.elasticsearch.plugin.ingest.textanalytics;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

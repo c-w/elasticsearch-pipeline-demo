@@ -1,4 +1,4 @@
-package org.elasticsearch.plugin.ingest.sentiment;
+package org.elasticsearch.plugin.ingest.textanalytics;
 
 import org.elasticsearch.common.collect.MapBuilder;
 import org.elasticsearch.common.settings.Setting;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unused")
-public class IngestSentimentPlugin extends Plugin implements IngestPlugin {
+public class IngestTextAnalyticsPlugin extends Plugin implements IngestPlugin {
     @Override
     public List<Setting<?>> getSettings() {
         return Collections.emptyList();
@@ -20,8 +20,7 @@ public class IngestSentimentPlugin extends Plugin implements IngestPlugin {
     @Override
     public Map<String, Processor.Factory> getProcessors(Processor.Parameters parameters) {
         return MapBuilder.<String, Processor.Factory>newMapBuilder()
-            .put(SentimentProcessor.TYPE, new SentimentProcessor.Factory())
+            .put(TextAnalyticsProcessor.TYPE, new TextAnalyticsProcessor.Factory())
             .immutableMap();
     }
-
 }

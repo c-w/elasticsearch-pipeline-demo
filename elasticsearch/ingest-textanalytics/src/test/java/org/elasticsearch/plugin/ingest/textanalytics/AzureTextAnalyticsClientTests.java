@@ -1,4 +1,4 @@
-package org.elasticsearch.plugin.ingest.sentiment;
+package org.elasticsearch.plugin.ingest.textanalytics;
 
 import com.google.gson.JsonParser;
 import org.elasticsearch.test.ESTestCase;
@@ -6,6 +6,7 @@ import org.junit.Before;
 
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Matchers.any;
@@ -39,7 +40,7 @@ public class AzureTextAnalyticsClientTests extends ESTestCase {
         Optional<Double> sentiment = textAnalyticsClient.fetchSentiment("text", "language");
 
         assertTrue(sentiment.isPresent());
-        assertEquals(sentiment.get(), 0.92, 0.001);
+        assertEquals(0.92, sentiment.get(), 0.001);
     }
 
     public void testSentimentRequestTimesOut() throws Exception {
@@ -48,5 +49,33 @@ public class AzureTextAnalyticsClientTests extends ESTestCase {
         Optional<Double> sentiment = textAnalyticsClient.fetchSentiment("text", "language");
 
         assertFalse(sentiment.isPresent());
+    }
+
+    public void testKeyPhrasesRequestSucceeds() throws Exception {
+        when(httpClient.post(any(), any(), any())).thenReturn(
+            new JsonParser().parse(
+                "{" +
+                    "  \"documents\": [" +
+                    "    {" +
+                    "      \"id\": \"1\"," +
+                    "      \"keyPhrases\": [\"world\", \"input text\"]" +
+                    "    }" +
+                    "  ]," +
+                    "  \"errrors\": []" +
+                    "}"));
+
+        List<String> sentiment = textAnalyticsClient.fetchKeyPhrases("text", "language");
+
+        assertEquals(2, sentiment.size());
+        assertEquals("world", sentiment.get(0));
+        assertEquals("input text", sentiment.get(1));
+    }
+
+    public void testkeyPhrasesRequestTimesOut() throws Exception {
+        when(httpClient.post(any(), any(), any())).thenThrow(new SocketTimeoutException("timeout"));
+
+        List<String> keyPhrases = textAnalyticsClient.fetchKeyPhrases("text", "language");
+
+        assertTrue(keyPhrases.isEmpty());
     }
 }

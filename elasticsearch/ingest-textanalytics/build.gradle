@@ -21,9 +21,9 @@ licenseFile = rootProject.file('LICENSE.txt')
 noticeFile = rootProject.file('NOTICE.txt')
 
 esplugin {
-  name 'ingest-sentiment'
-  description 'Ingest processor that performs sentiment analysis'
-  classname 'org.elasticsearch.plugin.ingest.sentiment.IngestSentimentPlugin'
+  name 'ingest-textanalytics'
+  description 'Ingest processor for Azure Text Analytics'
+  classname 'org.elasticsearch.plugin.ingest.textanalytics.IngestTextAnalyticsPlugin'
   licenseFile rootProject.file('LICENSE.txt')
   noticeFile rootProject.file('NOTICE.txt')
 }

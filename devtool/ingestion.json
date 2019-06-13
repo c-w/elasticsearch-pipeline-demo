@@ -8,10 +8,11 @@
       }
     },
     {
-      "sentiment" : {
+      "textanalytics" : {
         "text_field" : "doc.content",
         "language_field" : "doc.language",
-        "target_field": "sentiment"
+        "key_phrases_field": "key_phrases",
+        "sentiment_field": "sentiment"
       }
     }
   ]

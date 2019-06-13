@@ -1,13 +1,13 @@
-# Elasticsearch Sentiment Ingest Processor
+# Elasticsearch TextAnalytics Ingest Processor
 
-This processor analyzes document sentiment via [Azure Text Analytics](https://azure.microsoft.com/en-us/services/cognitive-services/text-analytics/).
+This processor analyzes documents via [Azure Text Analytics](https://azure.microsoft.com/en-us/services/cognitive-services/text-analytics/).
 
 ## Usage
 
 ```
-PUT _ingest/pipeline/sentiment-pipeline
+PUT _ingest/pipeline/textanalytics-pipeline
 {
-  "description": "A pipeline to analyze sentiment",
+  "description": "A pipeline to use Azure Text Analytics",
   "processors": [
     {
       "sentiment" : {
@@ -18,7 +18,7 @@ PUT _ingest/pipeline/sentiment-pipeline
   ]
 }
 
-PUT /my-index/my-type/1?pipeline=sentiment-pipeline
+PUT /my-index/my-type/1?pipeline=textanalytics-pipeline
 {
   "doc_text" : "What a great day!",
   "doc_lang": "en"
@@ -28,10 +28,11 @@ GET /my-index/my-type/1
 {
   "doc_text" : "What a great day!",
   "doc_lang" : "en",
+  "key_phrases": ["great day"],
   "sentiment": 1
 }
 
-PUT /my-index/my-type/2?pipeline=sentiment-pipeline
+PUT /my-index/my-type/2?pipeline=textanalytics-pipeline
 {
   "doc_text" : "That makes me sad :(",
   "doc_lang": "en"
@@ -41,6 +42,7 @@ GET /my-index/my-type/2
 {
   "doc_text" : "That makes me sad :(",
   "doc_lang" : "en",
+  "key_phrases": [],
   "sentiment": 0.05
 }
 ```
@@ -53,7 +55,8 @@ GET /my-index/my-type/2
 | --------- | -------- | ------- | ----------- |
 | text_field | yes | - | The field from which to get the document text |
 | language_field | yes | - | The field from which to get the document language |
-| target_field | no | sentiment | The field that will hold the sentiment score |
+| sentiment_field | no | sentiment | The field that will hold the sentiment score |
+| key_phrases_field | no | key_phrases | The field that will hold the key phrases |
 | timeout_seconds | no | 5 | The timeout for text analytics requests |
 
 ### Node environment variables
@@ -76,5 +79,5 @@ This will produce a zip file in `build/distributions`.
 After building the zip file, you can install it like this
 
 ```bash
-bin/elasticsearch-plugin install file:///path/to/ingest-sentiment/build/distribution/ingest-sentiment-0.0.1-SNAPSHOT.zip
+bin/elasticsearch-plugin install file:///path/to/ingest-textanalytics/build/distribution/ingest-textanalytics-0.0.1-SNAPSHOT.zip
 ```
