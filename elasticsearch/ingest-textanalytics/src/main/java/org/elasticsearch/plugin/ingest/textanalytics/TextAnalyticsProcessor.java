@@ -54,7 +54,9 @@ public class TextAnalyticsProcessor extends AbstractProcessor {
         public TextAnalyticsProcessor create(Map<String, Processor.Factory> factories, String tag, Map<String, Object> config)
             throws Exception {
 
-            JsonHttpClient httpClient = new JsonHttpClient(readIntProperty(TYPE, tag, config, "timeout_seconds", 5));
+            JsonHttpClient httpClient = new JsonHttpClient(
+                readIntProperty(TYPE, tag, config, "timeout_seconds", 5),
+                readIntProperty(TYPE, tag, config, "retry_interval_seconds", 1));
 
             TextAnalytics azureTextAnalyticsClient = new AzureTextAnalyticsClient(
                 httpClient,

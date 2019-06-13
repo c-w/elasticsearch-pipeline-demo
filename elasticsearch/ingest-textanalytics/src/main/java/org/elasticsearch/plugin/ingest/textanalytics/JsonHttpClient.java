@@ -28,24 +28,8 @@ class JsonHttpClient {
         this.requestConfig = requestConfig;
     }
 
-    JsonHttpClient(int timeoutSeconds) {
-        this(HttpClientBuilder.create()
-                .setServiceUnavailableRetryStrategy(new ServiceUnavailableRetryStrategy() {
-                    @Override
-                    public boolean retryRequest(HttpResponse response, int executionCount, HttpContext context) {
-                        int statusCode = response.getStatusLine().getStatusCode();
-                        return statusCode == 502;
-                    }
-
-                    @Override
-                    public long getRetryInterval() {
-                        return 1000;
-                    }
-                })
-                .build(),
-            RequestConfig.custom()
-                .setConnectionRequestTimeout(timeoutSeconds * 1000)
-                .build());
+    JsonHttpClient(int timeoutSeconds, int retryIntervalSeconds) {
+        this(defaultHttpClient(retryIntervalSeconds), defaultRequestConfig(timeoutSeconds));
     }
 
     JsonElement post(URI uri, JsonElement body, Map<String, String> headers) throws IOException {
@@ -67,5 +51,28 @@ class JsonHttpClient {
         } catch (PrivilegedActionException e) {
             throw (IOException) e.getCause();
         }
+    }
+
+    private static RequestConfig defaultRequestConfig(int timeoutSeconds) {
+        return RequestConfig.custom()
+            .setConnectionRequestTimeout(timeoutSeconds * 1000)
+            .build();
+    }
+
+    private static HttpClient defaultHttpClient(int retryIntervalSeconds) {
+        return HttpClientBuilder.create()
+            .setServiceUnavailableRetryStrategy(new ServiceUnavailableRetryStrategy() {
+                @Override
+                public boolean retryRequest(HttpResponse response, int executionCount, HttpContext context) {
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    return statusCode == 502;
+                }
+
+                @Override
+                public long getRetryInterval() {
+                    return retryIntervalSeconds * 1000;
+                }
+            })
+            .build();
     }
 }

@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class JsonHttpClientTests extends ESTestCase {
     public void testCanMakeRequest() throws Exception {
-        JsonHttpClient client = new JsonHttpClient(10);
+        JsonHttpClient client = new JsonHttpClient(10, 1);
 
         URI uri = new URI("https://postman-echo.com/post");
         JsonObject body = new JsonObject();

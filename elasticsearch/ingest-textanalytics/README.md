@@ -58,6 +58,7 @@ GET /my-index/my-type/2
 | sentiment_field | no | sentiment | The field that will hold the sentiment score |
 | key_phrases_field | no | key_phrases | The field that will hold the key phrases |
 | timeout_seconds | no | 5 | The timeout for text analytics requests |
+| retry_interval_seconds | no | 1 | The interval between retries of failed text analytics requests |
 
 ### Node environment variables
 
