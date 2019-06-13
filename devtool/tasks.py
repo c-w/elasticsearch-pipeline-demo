@@ -2,11 +2,13 @@ from base64 import b64encode
 from glob import iglob
 from os.path import expandvars
 from pathlib import Path
+from time import sleep
 import json
 import shlex
 
 from azure.storage.blob import BlockBlobService
 from elasticsearch import Elasticsearch
+from elasticsearch import ElasticsearchException
 from environs import Env
 from invoke import task
 
@@ -29,21 +31,39 @@ def lint(context):
     context.run("black --check {}".format(files))
 
 
-@task
-def create_es_index(_, name=ES_INDEX, host=ES_HOST, port=ES_PORT):
+def wait_for_elasticsearch(host, port):
     client = Elasticsearch([{"host": host, "port": port}])
 
-    client.indices.create(index=name, ignore=400)
+    connected = False
+    while not connected:
+        try:
+            health = client.cluster.health()
+        except ElasticsearchException:
+            pass
+        else:
+            connected = health["status"] in {"yellow", "green"}
+
+        if not connected:
+            sleep(1)
+
+    return client
+
+
+@task
+def create_es_index(_, name=ES_INDEX, host=ES_HOST, port=ES_PORT):
+    search_client = wait_for_elasticsearch(host, port)
+
+    search_client.indices.create(index=name, ignore=400)
 
 
 @task
 def create_es_pipeline(_, path, name=ES_PIPELINE, host=ES_HOST, port=ES_PORT):
     path = Path(path)
-    client = Elasticsearch([{"host": host, "port": port}])
+    search_client = wait_for_elasticsearch(host, port)
 
     pipeline = json.loads(expandvars(path.read_text(encoding="utf-8")))
 
-    client.ingest.put_pipeline(name, pipeline)
+    search_client.ingest.put_pipeline(name, pipeline)
 
 
 @task
@@ -57,10 +77,10 @@ def create_es_document(
     storage_container=STORAGE_CONTAINER,
     storage_connection_string=STORAGE_CONNECTION_STRING,
 ):
+    search_client = wait_for_elasticsearch(host, port)
+
     storage_client = BlockBlobService(connection_string=storage_connection_string)
     blob = storage_client.get_blob_to_bytes(storage_container, blob)
-
-    client = Elasticsearch([{"host": host, "port": port}])
 
     body = {
         "raw": {
@@ -69,4 +89,4 @@ def create_es_document(
         }
     }
 
-    client.index(index=index, pipeline=pipeline, body=body)
+    search_client.index(index=index, pipeline=pipeline, body=body)
