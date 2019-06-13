@@ -5,6 +5,7 @@ from pathlib import Path
 import json
 import shlex
 
+from azure.storage.blob import BlockBlobService
 from elasticsearch import Elasticsearch
 from environs import Env
 from invoke import task
@@ -16,6 +17,7 @@ ES_HOST = _ENV("ES_HOST", "localhost")
 ES_PORT = _ENV.int("ES_PORT", 9200)
 ES_PIPELINE = _ENV("ES_PIPELINE", "ingestion")
 ES_INDEX = _ENV("ES_INDEX", "devindex")
+STORAGE_CONNECTION_STRING = _ENV("AZURE_STORAGE_CONNECTION_STRING", "")
 
 
 @task
@@ -44,15 +46,24 @@ def create_es_pipeline(_, path, name=ES_PIPELINE, host=ES_HOST, port=ES_PORT):
 
 @task
 def create_es_document(
-    _, path, index=ES_INDEX, pipeline=ES_PIPELINE, host=ES_HOST, port=ES_PORT
+    _,
+    container,
+    blob,
+    index=ES_INDEX,
+    pipeline=ES_PIPELINE,
+    host=ES_HOST,
+    port=ES_PORT,
+    storage_connection_string=STORAGE_CONNECTION_STRING,
 ):
-    path = Path(path)
+    storage_client = BlockBlobService(connection_string=storage_connection_string)
+    blob = storage_client.get_blob_to_bytes(container, blob)
+
     client = Elasticsearch([{"host": host, "port": port}])
 
     body = {
         "raw": {
-            "doc": b64encode(path.read_bytes()).decode("ascii"),
-            "source": str(path.resolve()),
+            "doc": b64encode(blob.content).decode("ascii"),
+            "source": storage_client.make_blob_url(container, blob.name),
         }
     }
 

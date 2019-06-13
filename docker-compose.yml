@@ -21,20 +21,35 @@ services:
     build: devtool
     command: >
       create-es-index
-      create-es-pipeline --path /conf/ingestion.json
-      create-es-document --path /conf/examples/hello.docx
-      create-es-document --path /conf/examples/hello.pdf
+      create-es-pipeline --path /app/ingestion.json
+      create-es-document --container ${AZURE_STORAGE_CONTAINER} --blob hello.docx
+      create-es-document --container ${AZURE_STORAGE_CONTAINER} --blob hello.pdf
     environment:
       ES_HOST: 'elasticsearch'
       ES_PORT: '9200'
       AZURE_TEXT_ANALYTICS_ENDPOINT: '${AZURE_TEXT_ANALYTICS_ENDPOINT}'
       AZURE_TEXT_ANALYTICS_KEY: '${AZURE_TEXT_ANALYTICS_KEY}'
+      AZURE_STORAGE_CONNECTION_STRING: '${AZURE_STORAGE_CONNECTION_STRING}'
     links:
+      - azurestorage
       - elasticsearch
-    volumes:
-      - ./conf:/conf
 
   elasticsearch-ui:
     image: appbaseio/dejavu:3.3.1
     ports:
       - 1358:1358
+
+  azurestorage:
+    image: arafato/azurite:2.6.5
+    environment:
+      executable: 'blob'
+    ports:
+      - 10000:10000
+
+  azurestorage-init:
+    build: azurestorage
+    environment:
+      AZURE_STORAGE_CONNECTION_STRING: '${AZURE_STORAGE_CONNECTION_STRING}'
+      AZURE_STORAGE_CONTAINER: '${AZURE_STORAGE_CONTAINER}'
+    links:
+      - azurestorage
