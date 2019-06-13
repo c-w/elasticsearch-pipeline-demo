@@ -6,7 +6,7 @@ COPY . /app/
 WORKDIR /app/ingest-sentiment
 RUN gradle clean check assembleZip
 
-FROM docker.elastic.co/elasticsearch/elasticsearch:7.1.1
+FROM docker.elastic.co/elasticsearch/elasticsearch-oss:7.1.1
 
 RUN bin/elasticsearch-plugin install --batch ingest-attachment
 
