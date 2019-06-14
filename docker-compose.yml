@@ -16,6 +16,9 @@ services:
       AZURE_TEXT_ANALYTICS_ENDPOINT: 'http://textanalytics:5000'
       AZURE_TEXT_ANALYTICS_KEY: 'not-used'
       AZURE_STORAGE_CONNECTION_STRING: '${AZURE_STORAGE_CONNECTION_STRING}'
+      ingest.opennlp.model.file.persons: 'en-ner-persons.bin'
+      ingest.opennlp.model.file.dates: 'en-ner-dates.bin'
+      ingest.opennlp.model.file.locations: 'en-ner-locations.bin'
     ports:
       - 9200:9200
       - 9300:9300
@@ -30,6 +33,7 @@ services:
       create-es-pipeline --path /app/ingestion.json
       create-es-document --blob hello.docx --container '${AZURE_STORAGE_CONTAINER}'
       create-es-document --blob hello.pdf --container '${AZURE_STORAGE_CONTAINER}'
+      create-es-document --blob opennlp.txt --container '${AZURE_STORAGE_CONTAINER}'
     environment:
       ES_HOST: 'elasticsearch'
       ES_PORT: '9200'

@@ -14,6 +14,9 @@ FROM docker.elastic.co/elasticsearch/elasticsearch-oss:7.1.1
 
 RUN bin/elasticsearch-plugin install --batch ingest-attachment
 
+RUN bin/elasticsearch-plugin install https://github.com/spinscale/elasticsearch-ingest-opennlp/releases/download/7.1.1.1/ingest-opennlp-7.1.1.1.zip \
+ && bin/ingest-opennlp/download-models
+
 COPY --from=builder /app/ingest-azurestorage/build/distributions/ingest-azurestorage-0.0.1-SNAPSHOT-deploy.zip /plugins/
 RUN bin/elasticsearch-plugin install --batch file:///plugins/ingest-azurestorage-0.0.1-SNAPSHOT-deploy.zip
 
