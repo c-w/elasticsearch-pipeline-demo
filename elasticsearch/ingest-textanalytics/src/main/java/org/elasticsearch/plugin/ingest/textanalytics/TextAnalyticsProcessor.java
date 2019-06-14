@@ -5,6 +5,7 @@ import org.elasticsearch.ingest.IngestDocument;
 import org.elasticsearch.ingest.Processor;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,13 +34,17 @@ public class TextAnalyticsProcessor extends AbstractProcessor {
         String text = ingestDocument.getFieldValue(inputFields.getTextField(), String.class);
         String language = ingestDocument.getFieldValue(inputFields.getLanguageField(), String.class);
 
+        Map<String, Object> output = new HashMap<>();
+
         Optional<Double> sentiment = textAnalytics.fetchSentiment(text, language);
-        sentiment.ifPresent(score -> ingestDocument.setFieldValue(outputFields.getSentimentField(), score));
+        sentiment.ifPresent(score -> output.put("sentiment", score));
 
         List<String> keyPhrases = textAnalytics.fetchKeyPhrases(text, language);
         if (!keyPhrases.isEmpty()) {
-            ingestDocument.setFieldValue(outputFields.getKeyPhrasesField(), keyPhrases);
+            output.put("key_phrases", keyPhrases);
         }
+
+        ingestDocument.setFieldValue(outputFields.getTargetField(), output);
 
         return ingestDocument;
     }
@@ -68,8 +73,7 @@ public class TextAnalyticsProcessor extends AbstractProcessor {
                 readStringProperty(TYPE, tag, config, "language_field", null));
 
             OutputFields outputFields = new OutputFields(
-                readStringProperty(TYPE, tag, config, "key_phrases_field", "key_phrases"),
-                readStringProperty(TYPE, tag, config, "sentiment_field", "sentiment"));
+                readStringProperty(TYPE, tag, config, "target_field", "textanalytics"));
 
             return new TextAnalyticsProcessor(tag, inputFields, outputFields, azureTextAnalyticsClient);
         }

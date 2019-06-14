@@ -1,19 +1,13 @@
 package org.elasticsearch.plugin.ingest.textanalytics;
 
 class OutputFields {
-    private final String keyPhrasesField;
-    private final String sentimentField;
+    private final String targetField;
 
-    OutputFields(String keyPhrasesField, String sentimentField) {
-        this.keyPhrasesField = keyPhrasesField;
-        this.sentimentField = sentimentField;
+    OutputFields(String targetField) {
+        this.targetField = targetField;
     }
 
-    String getKeyPhrasesField() {
-        return keyPhrasesField;
-    }
-
-    String getSentimentField() {
-        return sentimentField;
+    String getTargetField() {
+        return targetField;
     }
 }

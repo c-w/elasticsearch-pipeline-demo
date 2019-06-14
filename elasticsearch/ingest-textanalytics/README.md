@@ -28,8 +28,10 @@ GET /my-index/my-type/1
 {
   "doc_text" : "What a great day!",
   "doc_lang" : "en",
-  "key_phrases": ["great day"],
-  "sentiment": 1
+  "textanalytics": {
+    "key_phrases": ["great day"],
+    "sentiment": 1
+  }
 }
 
 PUT /my-index/my-type/2?pipeline=textanalytics-pipeline
@@ -42,8 +44,10 @@ GET /my-index/my-type/2
 {
   "doc_text" : "That makes me sad :(",
   "doc_lang" : "en",
-  "key_phrases": [],
-  "sentiment": 0.05
+  "textanalytics": {
+    "key_phrases": [],
+    "sentiment": 0.05
+  }
 }
 ```
 
@@ -55,8 +59,7 @@ GET /my-index/my-type/2
 | --------- | -------- | ------- | ----------- |
 | text_field | yes | - | The field from which to get the document text |
 | language_field | yes | - | The field from which to get the document language |
-| sentiment_field | no | sentiment | The field that will hold the sentiment score |
-| key_phrases_field | no | key_phrases | The field that will hold the key phrases |
+| target_field | no | textanalytics | The field that will hold the text analytics |
 | timeout_seconds | no | 5 | The timeout for text analytics requests |
 | retry_interval_seconds | no | 1 | The interval between retries of failed text analytics requests |
 

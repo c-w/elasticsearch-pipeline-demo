@@ -24,8 +24,7 @@
       "textanalytics" : {
         "text_field" : "doc.content",
         "language_field" : "doc.language",
-        "key_phrases_field": "textanalytics.keyphrases",
-        "sentiment_field": "textanalytics.sentiment"
+        "target_field": "textanalytics"
       }
     }
   ]

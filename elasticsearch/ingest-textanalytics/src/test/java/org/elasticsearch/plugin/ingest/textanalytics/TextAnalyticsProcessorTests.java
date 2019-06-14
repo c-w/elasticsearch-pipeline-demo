@@ -3,6 +3,7 @@ package org.elasticsearch.plugin.ingest.textanalytics;
 import org.elasticsearch.ingest.IngestDocument;
 import org.elasticsearch.test.ESTestCase;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,15 +11,13 @@ import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static org.elasticsearch.ingest.RandomDocumentPicks.randomIngestDocument;
-import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 
 public class TextAnalyticsProcessorTests extends ESTestCase {
     private static final InputFields INPUT_FIELDS = new InputFields("doc_text", "doc_lang");
-    private static final OutputFields OUTPUT_FIELDS = new OutputFields("key_phrases", "sentiment");
+    private static final OutputFields OUTPUT_FIELDS = new OutputFields("output");
 
-    public void testThatProcessorAddsSentiment() {
+    @SuppressWarnings("unchecked")
+    public void testThatProcessorAddsSentimentAndKeyPhrases() {
         Map<String, Object> document = new HashMap<>();
         document.put("doc_text", "What a great day!");
         document.put("doc_lang", "en");
@@ -32,18 +31,26 @@ public class TextAnalyticsProcessorTests extends ESTestCase {
 
                 @Override
                 public List<String> fetchKeyPhrases(String text, String language) {
-                    return emptyList();
+                    List<String> keyPhrases = new ArrayList<>();
+                    keyPhrases.add("great day");
+                    return keyPhrases;
                 }
             });
 
         IngestDocument ingestDocument = randomIngestDocument(random(), document);
-        Map<String, Object> data = processor.execute(ingestDocument).getSourceAndMetadata();
+        processor.execute(ingestDocument);
 
-        assertThat(data, hasKey("sentiment"));
-        assertThat(data.get("sentiment"), is(0.76));
+        assertTrue(ingestDocument.hasField("output.sentiment"));
+        Double sentiment = ingestDocument.getFieldValue("output.sentiment", Double.class);
+        assertEquals(0.76, sentiment, 0.001);
+
+        assertTrue(ingestDocument.hasField("output.key_phrases"));
+        List<String> keyPhrases = ingestDocument.getFieldValue("output.key_phrases", List.class);
+        assertEquals(1, keyPhrases.size());
+        assertEquals("great day", keyPhrases.get(0));
     }
 
-    public void testThatProcessorDoesNotAddNullSentiment() {
+    public void testThatProcessorDoesNotAddNullSentimentOrEmptyKeyPhrases() {
         Map<String, Object> document = new HashMap<>();
         document.put("doc_text", "What a great day!");
         document.put("doc_lang", "en");
@@ -62,8 +69,9 @@ public class TextAnalyticsProcessorTests extends ESTestCase {
             });
 
         IngestDocument ingestDocument = randomIngestDocument(random(), document);
-        Map<String, Object> data = processor.execute(ingestDocument).getSourceAndMetadata();
+        processor.execute(ingestDocument);
 
-        assertThat(data, not(hasKey("sentiment")));
+        assertFalse(ingestDocument.hasField("output.sentiment"));
+        assertFalse(ingestDocument.hasField("output.key_phrases"));
     }
 }
