@@ -1,4 +1,3 @@
-from base64 import b64encode
 from glob import iglob
 from os.path import expandvars
 from pathlib import Path
@@ -6,7 +5,6 @@ from time import sleep
 import json
 import shlex
 
-from azure.storage.blob import BlockBlobService
 from elasticsearch import Elasticsearch
 from elasticsearch import ElasticsearchException
 from environs import Env
@@ -20,9 +18,6 @@ ES_PORT = _ENV.int("ES_PORT", 9200)
 ES_PIPELINE = _ENV("ES_PIPELINE", "")
 ES_INDEX = _ENV("ES_INDEX", "")
 ES_TIMEOUT = _ENV.int("ES_TIMEOUT_SECONDS", 120)
-
-STORAGE_CONTAINER = _ENV("AZURE_STORAGE_CONTAINER", "")
-STORAGE_CONNECTION_STRING = _ENV("AZURE_STORAGE_CONNECTION_STRING", "")
 
 
 @task
@@ -69,25 +64,10 @@ def create_es_pipeline(_, path, name=ES_PIPELINE, host=ES_HOST, port=ES_PORT):
 
 @task
 def create_es_document(
-    _,
-    blob,
-    index=ES_INDEX,
-    pipeline=ES_PIPELINE,
-    host=ES_HOST,
-    port=ES_PORT,
-    storage_container=STORAGE_CONTAINER,
-    storage_connection_string=STORAGE_CONNECTION_STRING,
+    _, blob, container, index=ES_INDEX, pipeline=ES_PIPELINE, host=ES_HOST, port=ES_PORT
 ):
     search_client = wait_for_elasticsearch(host, port)
 
-    storage_client = BlockBlobService(connection_string=storage_connection_string)
-    blob = storage_client.get_blob_to_bytes(storage_container, blob)
-
-    body = {
-        "raw": {
-            "doc": b64encode(blob.content).decode("ascii"),
-            "source": storage_client.make_blob_url(storage_container, blob.name),
-        }
-    }
+    body = {"azurestorage": {"container": container, "blob": blob}}
 
     search_client.index(index=index, pipeline=pipeline, body=body)

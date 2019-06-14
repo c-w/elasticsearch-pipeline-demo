@@ -2,6 +2,13 @@
   "description" : "Ingestion pipeline",
   "processors" : [
     {
+      "azurestorage" : {
+        "container_field" : "azurestorage.container",
+        "blob_field" : "azurestorage.blob",
+        "target_field": "raw.doc"
+      }
+    },
+    {
       "attachment" : {
         "field" : "raw.doc",
         "target_field": "doc"

@@ -15,10 +15,12 @@ services:
       ES_JAVA_OPTS: '-Xms512m -Xmx512m'
       AZURE_TEXT_ANALYTICS_ENDPOINT: 'http://textanalytics:5000'
       AZURE_TEXT_ANALYTICS_KEY: 'not-used'
+      AZURE_STORAGE_CONNECTION_STRING: '${AZURE_STORAGE_CONNECTION_STRING}'
     ports:
       - 9200:9200
       - 9300:9300
     links:
+      - azurestorage
       - textanalytics-sentiment
 
   elasticsearch-init:
@@ -26,17 +28,14 @@ services:
     command: >
       create-es-index
       create-es-pipeline --path /app/ingestion.json
-      create-es-document --blob hello.docx
-      create-es-document --blob hello.pdf
+      create-es-document --blob hello.docx --container '${AZURE_STORAGE_CONTAINER}'
+      create-es-document --blob hello.pdf --container '${AZURE_STORAGE_CONTAINER}'
     environment:
       ES_HOST: 'elasticsearch'
       ES_PORT: '9200'
       ES_INDEX: '${ELASTIC_SEARCH_INDEX_NAME}'
       ES_PIPELINE: '${ELASTIC_SEARCH_PIPELINE_NAME}'
-      AZURE_STORAGE_CONNECTION_STRING: '${AZURE_STORAGE_CONNECTION_STRING}'
-      AZURE_STORAGE_CONTAINER: '${AZURE_STORAGE_CONTAINER}'
     links:
-      - azurestorage
       - elasticsearch
 
   elasticsearch-ui:

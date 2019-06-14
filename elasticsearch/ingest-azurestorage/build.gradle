@@ -1,0 +1,58 @@
+buildscript {
+  repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+  }
+
+  dependencies {
+    classpath 'org.elasticsearch.gradle:build-tools:7.1.1'
+  }
+}
+
+group = 'org.elasticsearch.plugin.ingest'
+version = '0.0.1-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'elasticsearch.esplugin'
+
+licenseFile = rootProject.file('LICENSE.txt')
+noticeFile = rootProject.file('NOTICE.txt')
+
+esplugin {
+  name 'ingest-azurestorage'
+  description 'Ingest processor for Azure Storage'
+  classname 'org.elasticsearch.plugin.ingest.azurestorage.IngestAzureStoragePlugin'
+  licenseFile rootProject.file('LICENSE.txt')
+  noticeFile rootProject.file('NOTICE.txt')
+}
+
+dependencies {
+  implementation 'com.microsoft.azure:azure-storage:8.3.0'
+}
+
+configurations.all {
+  resolutionStrategy.force 'com.fasterxml.jackson.core:jackson-core:2.8.11'
+}
+
+checkstyleMain.enabled = true
+checkstyleTest.enabled = true
+
+loggerUsageCheck.enabled = false
+dependencyLicenses.enabled = false
+thirdPartyAudit.enabled = false
+licenseHeaders.enabled = false
+integTest.enabled = false
+filepermissions.enabled = false
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+task assembleZip(type: Zip) {
+  archiveClassifier.set('deploy')
+  from zipTree("${buildDir}/distributions/${rootProject.name}-${version}.zip".toString())
+  from configurations.default
+  exclude '**/jackson-core-2.8.11.jar'
+}
+assembleZip.dependsOn(assemble)

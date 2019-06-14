@@ -1,2 +1,5 @@
-*
-!ingest-*/
+**/.idea/
+**/.gradle/
+**/build/
+**/out/
+**/*.iml
