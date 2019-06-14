@@ -5,12 +5,12 @@
       "azurestorage" : {
         "container_field" : "azurestorage.container",
         "blob_field" : "azurestorage.blob",
-        "target_field": "raw.doc"
+        "target_field": "doc.raw"
       }
     },
     {
       "attachment" : {
-        "field" : "raw.doc",
+        "field" : "doc.raw",
         "target_field": "doc"
       }
     },
