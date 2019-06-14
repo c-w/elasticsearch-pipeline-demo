@@ -13,20 +13,20 @@ import static org.hamcrest.Matchers.is;
 
 public class AzureStorageProcessorTests extends ESTestCase {
     private static final InputFields INPUT_FIELDS = new InputFields("container", "blob");
-    private static final OutputFields OUTPUT_FIELDS = new OutputFields("base64");
+    private static final String TARGET_FIELD = "base64";
 
-    public void testThatProcessorAddsSentiment() throws Exception {
+    public void testThatProcessorDownloadsBlob() throws Exception {
         Map<String, Object> document = new HashMap<>();
-        document.put("container", "mycontainer");
-        document.put("blob", "myblob");
+        document.put(INPUT_FIELDS.getContainerField(), "mycontainer");
+        document.put(INPUT_FIELDS.getBlobField(), "myblob");
 
-        AzureStorageProcessor processor = new AzureStorageProcessor(randomAlphaOfLength(10), INPUT_FIELDS, OUTPUT_FIELDS, (container,
-            blob) -> "Hello world".getBytes(UTF_8));
+        AzureStorageProcessor processor = new AzureStorageProcessor(randomAlphaOfLength(10), INPUT_FIELDS, TARGET_FIELD,
+            (container, blob) -> "Hello world".getBytes(UTF_8));
 
         IngestDocument ingestDocument = randomIngestDocument(random(), document);
         Map<String, Object> data = processor.execute(ingestDocument).getSourceAndMetadata();
 
-        assertThat(data, hasKey("base64"));
-        assertThat(data.get("base64"), is("SGVsbG8gd29ybGQ="));
+        assertThat(data, hasKey(TARGET_FIELD));
+        assertThat(data.get(TARGET_FIELD), is("SGVsbG8gd29ybGQ="));
     }
 }

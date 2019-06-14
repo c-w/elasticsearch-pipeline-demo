@@ -14,15 +14,15 @@ import static org.elasticsearch.ingest.RandomDocumentPicks.randomIngestDocument;
 
 public class TextAnalyticsProcessorTests extends ESTestCase {
     private static final InputFields INPUT_FIELDS = new InputFields("doc_text", "doc_lang");
-    private static final OutputFields OUTPUT_FIELDS = new OutputFields("output");
+    private static final String TARGET_FIELD = "output";
 
     @SuppressWarnings("unchecked")
     public void testThatProcessorAddsSentimentAndKeyPhrases() {
         Map<String, Object> document = new HashMap<>();
-        document.put("doc_text", "What a great day!");
-        document.put("doc_lang", "en");
+        document.put(INPUT_FIELDS.getTextField(), "What a great day!");
+        document.put(INPUT_FIELDS.getLanguageField(), "en");
 
-        TextAnalyticsProcessor processor = new TextAnalyticsProcessor(randomAlphaOfLength(10), INPUT_FIELDS, OUTPUT_FIELDS,
+        TextAnalyticsProcessor processor = new TextAnalyticsProcessor(randomAlphaOfLength(10), INPUT_FIELDS, TARGET_FIELD,
             new TextAnalytics() {
                 @Override
                 public Optional<Double> fetchSentiment(String text, String language) {
@@ -52,10 +52,10 @@ public class TextAnalyticsProcessorTests extends ESTestCase {
 
     public void testThatProcessorDoesNotAddNullSentimentOrEmptyKeyPhrases() {
         Map<String, Object> document = new HashMap<>();
-        document.put("doc_text", "What a great day!");
-        document.put("doc_lang", "en");
+        document.put(INPUT_FIELDS.getTextField(), "What a great day!");
+        document.put(INPUT_FIELDS.getLanguageField(), "en");
 
-        TextAnalyticsProcessor processor = new TextAnalyticsProcessor(randomAlphaOfLength(10), INPUT_FIELDS, OUTPUT_FIELDS,
+        TextAnalyticsProcessor processor = new TextAnalyticsProcessor(randomAlphaOfLength(10), INPUT_FIELDS, TARGET_FIELD,
             new TextAnalytics() {
                 @Override
                 public Optional<Double> fetchSentiment(String text, String language) {

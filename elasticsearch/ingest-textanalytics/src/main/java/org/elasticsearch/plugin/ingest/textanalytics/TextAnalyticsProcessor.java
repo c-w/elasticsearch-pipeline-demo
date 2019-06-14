@@ -4,28 +4,24 @@ import org.elasticsearch.ingest.AbstractProcessor;
 import org.elasticsearch.ingest.IngestDocument;
 import org.elasticsearch.ingest.Processor;
 
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static java.lang.System.getenv;
-import static org.elasticsearch.ingest.ConfigurationUtils.newConfigurationException;
-import static org.elasticsearch.ingest.ConfigurationUtils.readIntProperty;
 import static org.elasticsearch.ingest.ConfigurationUtils.readStringProperty;
 
 public class TextAnalyticsProcessor extends AbstractProcessor {
     static final String TYPE = "textanalytics";
 
     private final InputFields inputFields;
-    private final OutputFields outputFields;
+    private final String targetField;
     private final TextAnalytics textAnalytics;
 
-    TextAnalyticsProcessor(String tag, InputFields inputFields, OutputFields outputFields, TextAnalytics textAnalytics) {
+    TextAnalyticsProcessor(String tag, InputFields inputFields, String targetField, TextAnalytics textAnalytics) {
         super(tag);
         this.inputFields = inputFields;
-        this.outputFields = outputFields;
+        this.targetField = targetField;
         this.textAnalytics = textAnalytics;
     }
 
@@ -44,7 +40,7 @@ public class TextAnalyticsProcessor extends AbstractProcessor {
             output.put("key_phrases", keyPhrases);
         }
 
-        ingestDocument.setFieldValue(outputFields.getTargetField(), output);
+        ingestDocument.setFieldValue(targetField, output);
 
         return ingestDocument;
     }
@@ -55,37 +51,21 @@ public class TextAnalyticsProcessor extends AbstractProcessor {
     }
 
     public static final class Factory implements Processor.Factory {
+        private final TextAnalytics textAnalytics;
+
+        Factory(TextAnalytics textAnalytics) {
+            this.textAnalytics = textAnalytics;
+        }
+
         @Override
-        public TextAnalyticsProcessor create(Map<String, Processor.Factory> factories, String tag, Map<String, Object> config)
-            throws Exception {
-
-            JsonHttpClient httpClient = new JsonHttpClient(
-                readIntProperty(TYPE, tag, config, "timeout_seconds", 5),
-                readIntProperty(TYPE, tag, config, "retry_interval_seconds", 1));
-
-            TextAnalytics azureTextAnalyticsClient = new AzureTextAnalyticsClient(
-                httpClient,
-                readEnv(tag, "AZURE_TEXT_ANALYTICS_KEY"),
-                new URL(readEnv(tag, "AZURE_TEXT_ANALYTICS_ENDPOINT")));
-
+        public TextAnalyticsProcessor create(Map<String, Processor.Factory> factories, String tag, Map<String, Object> config) {
             InputFields inputFields = new InputFields(
                 readStringProperty(TYPE, tag, config, "text_field", null),
                 readStringProperty(TYPE, tag, config, "language_field", null));
 
-            OutputFields outputFields = new OutputFields(
-                readStringProperty(TYPE, tag, config, "target_field", "textanalytics"));
+            String targetField = readStringProperty(TYPE, tag, config, "target_field", "textanalytics");
 
-            return new TextAnalyticsProcessor(tag, inputFields, outputFields, azureTextAnalyticsClient);
-        }
-
-        private static String readEnv(String tag, String key) {
-            String value = getenv(key);
-
-            if (value == null || value.isEmpty()) {
-                throw newConfigurationException(TYPE, tag, key, "required environment variable is missing");
-            }
-
-            return value;
+            return new TextAnalyticsProcessor(tag, inputFields, targetField, textAnalytics);
         }
     }
 }

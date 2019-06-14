@@ -39,11 +39,11 @@ GET /my-index/my-type/1
 | blob_field | no | blob | The field from which to get the storage blob path |
 | target_field | no | base64 | The field that will hold the base64-encoded blob content |
 
-### Node environment variables
+### Elasticsearch settings
 
-| Environment variable | Required | Default | Description |
-| -------------------- | -------- | ------- | ----------- |
-| AZURE_STORAGE_CONNECTION_STRING | yes | - | Connection string for Azure Storage |
+| Setting | Required | Default | Description |
+| ------- | -------- | ------- | ----------- |
+| ingest.azurestorage.connectionstring | yes | - | Connection string for Azure Storage |
 
 ## Setup
 

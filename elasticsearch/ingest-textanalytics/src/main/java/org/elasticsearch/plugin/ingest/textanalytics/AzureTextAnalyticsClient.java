@@ -26,8 +26,7 @@ class AzureTextAnalyticsClient implements TextAnalytics {
     private final URI keyPhrasesEndpoint;
     private final URI sentimentEndpoint;
 
-    AzureTextAnalyticsClient(JsonHttpClient httpClient, String accessKey, URL endpoint) throws MalformedURLException,
-        URISyntaxException {
+    AzureTextAnalyticsClient(JsonHttpClient httpClient, String accessKey, URL endpoint) throws MalformedURLException, URISyntaxException {
         this.httpClient = httpClient;
 
         this.authHeaders = new HashMap<>();

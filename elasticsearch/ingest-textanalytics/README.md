@@ -1,6 +1,6 @@
 # Elasticsearch TextAnalytics Ingest Processor
 
-This processor analyzes documents via [Azure Text Analytics](https://azure.microsoft.com/en-us/services/cognitive-services/text-analytics/).
+This processor analyzes documents via [Azure Text Analytics](https://azure.microsoft.com/en-us/services/cognitive-services/text-textAnalytics/).
 
 ## Usage
 
@@ -59,16 +59,18 @@ GET /my-index/my-type/2
 | --------- | -------- | ------- | ----------- |
 | text_field | yes | - | The field from which to get the document text |
 | language_field | yes | - | The field from which to get the document language |
-| target_field | no | textanalytics | The field that will hold the text analytics |
-| timeout_seconds | no | 5 | The timeout for text analytics requests |
-| retry_interval_seconds | no | 1 | The interval between retries of failed text analytics requests |
+| target_field | no | textanalytics | The field that will hold the text textAnalytics |
+| timeout_seconds | no | 5 | The timeout for text textAnalytics requests |
+| retry_interval_seconds | no | 1 | The interval between retries of failed text textAnalytics requests |
 
-### Node environment variables
+### Elasticsearch settings
 
-| Environment variable | Required | Default | Description |
-| -------------------- | -------- | ------- | ----------- |
-| AZURE_TEXT_ANALYTICS_ENDPOINT | yes | - | Endpoint for the Azure text analytics service |
-| AZURE_TEXT_ANALYTICS_KEY | yes | - | Access key for the Azure text analytics service |
+| Setting | Required | Default | Description |
+| ------- | -------- | ------- | ----------- |
+| ingest.textanalytics.endpoint | yes | - | Endpoint for the Azure text textAnalytics service |
+| ingest.textanalytics.key | yes | - | Access key for the Azure text textAnalytics service |
+| ingest.textanalytics.requesttimeout | no | 5 | Timeout (in seconds) for text textAnalytics requests |
+| ingest.textanalytics.retryinterval | no | 1 | Interval (in seconds) between retries of failed text textAnalytics requests |
 
 ## Setup
 
