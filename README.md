@@ -1,3 +1,5 @@
+[![Build Status](https://clewolff.visualstudio.com/elasticsearch-pipeline-demo/_apis/build/status/c-w.elasticsearch-pipeline-demo?branchName=master)](https://clewolff.visualstudio.com/elasticsearch-pipeline-demo/_build/latest?definitionId=6&branchName=master)
+
 ## Development setup
 
 To get started, copy `.env.template` to `.env` and set the required configuration values.
