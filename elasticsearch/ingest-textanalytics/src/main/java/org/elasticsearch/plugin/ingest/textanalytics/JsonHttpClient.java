@@ -7,7 +7,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HttpContext;
@@ -39,21 +38,11 @@ class JsonHttpClient {
         request.setConfig(requestConfig);
         request.addHeader("Content-Type", "application/json");
         headers.forEach(request::addHeader);
-        request.setEntity(new StringEntity(toJson(body)));
+        request.setEntity(new StringEntity(doPrivileged(() -> new Gson().toJsonTree(body).toString())));
 
-        JsonElement response = executeJsonRequest(request);
-        return fromJson(response, responseType);
-    }
+        JsonElement response = doPrivilegedIO(() -> httpClient.execute(request, new JsonResponseHandler()));
 
-    private JsonElement executeJsonRequest(HttpUriRequest request) throws IOException {
-        SpecialPermission.check();
-
-        try {
-            return AccessController.doPrivileged((PrivilegedExceptionAction<JsonElement>) () ->
-                httpClient.execute(request, new JsonResponseHandler()));
-        } catch (PrivilegedActionException e) {
-            throw (IOException) e.getCause();
-        }
+        return doPrivileged(() -> new Gson().fromJson(response, responseType));
     }
 
     private static RequestConfig defaultRequestConfig(int timeoutSeconds) {
@@ -79,25 +68,23 @@ class JsonHttpClient {
             .build();
     }
 
-    private static <T> String toJson(T item) {
+    private static <T> T doPrivileged(PrivilegedExceptionAction<T> action) {
         SpecialPermission.check();
 
         try {
-            return AccessController.doPrivileged((PrivilegedExceptionAction<String>) () ->
-                new Gson().toJsonTree(item).toString());
+            return AccessController.doPrivileged(action);
         } catch (PrivilegedActionException e) {
             throw new RuntimeException(e.getCause());
         }
     }
 
-    private static <T> T fromJson(JsonElement item, Class<T> classOfT) {
+    private static <T> T doPrivilegedIO(PrivilegedExceptionAction<T> action) throws IOException {
         SpecialPermission.check();
 
         try {
-            return AccessController.doPrivileged((PrivilegedExceptionAction<T>) () ->
-                new Gson().fromJson(item, classOfT));
+            return AccessController.doPrivileged(action);
         } catch (PrivilegedActionException e) {
-            throw new RuntimeException(e.getCause());
+            throw (IOException) e.getCause();
         }
     }
 }
