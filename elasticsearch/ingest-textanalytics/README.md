@@ -30,7 +30,7 @@ GET /my-index/my-type/1
   "doc_lang" : "en",
   "textanalytics": {
     "entities": ["today"],
-    "key_phrases": ["great day"],
+    "keyphrases": ["great day"],
     "sentiment": 1
   }
 }
@@ -46,6 +46,8 @@ GET /my-index/my-type/2
   "doc_text" : "That makes me sad :(",
   "doc_lang" : "en",
   "textanalytics": {
+    "entities": [],
+    "keyphrases": [],
     "sentiment": 0.05
   }
 }
@@ -60,6 +62,7 @@ GET /my-index/my-type/2
 | text_field | yes | - | The field from which to get the document text |
 | language_field | yes | - | The field from which to get the document language |
 | target_field | no | textanalytics | The field that will hold the text analytics |
+| analyzers | no | sentiment, keyphrases, entities | The text analytics to extract |
 
 ### Elasticsearch settings
 
