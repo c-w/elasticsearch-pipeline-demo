@@ -1,0 +1,9 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- script: docker-compose build
+  displayName: 'Build'
