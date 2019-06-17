@@ -1,9 +1,12 @@
 package org.elasticsearch.plugin.ingest.textanalytics;
 
-import com.google.gson.JsonArray;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import org.apache.http.conn.ConnectTimeoutException;
+import org.elasticsearch.plugin.ingest.textanalytics.dto.AzureTextAnalyticsDocument;
+import org.elasticsearch.plugin.ingest.textanalytics.dto.AzureTextAnalyticsKeyphrasesResponse;
+import org.elasticsearch.plugin.ingest.textanalytics.dto.AzureTextAnalyticsRequest;
+import org.elasticsearch.plugin.ingest.textanalytics.dto.AzureTextAnalyticsSentimentResponse;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -11,12 +14,11 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static java.util.Collections.emptyList;
 
@@ -38,7 +40,7 @@ class AzureTextAnalyticsClient implements TextAnalytics {
 
     @Override
     public Optional<Double> fetchSentiment(String text, String language) {
-        JsonObject request = buildTextAnalyticsRequest(text, language);
+        JsonElement request = buildTextAnalyticsRequest(text, language);
 
         JsonElement response;
         try {
@@ -54,7 +56,7 @@ class AzureTextAnalyticsClient implements TextAnalytics {
 
     @Override
     public List<String> fetchKeyPhrases(String text, String language) {
-        JsonObject request = buildTextAnalyticsRequest(text, language);
+        JsonElement request = buildTextAnalyticsRequest(text, language);
 
         JsonElement response;
         try {
@@ -68,41 +70,31 @@ class AzureTextAnalyticsClient implements TextAnalytics {
         return parseKeyPhrasesResponse(response);
     }
 
-    private JsonObject buildTextAnalyticsRequest(String text, String language) {
-        JsonObject document = new JsonObject();
-        document.addProperty("id", "1");
-        document.addProperty("text", text);
-        document.addProperty("language", language);
+    private JsonElement buildTextAnalyticsRequest(String text, String language) {
+        AzureTextAnalyticsDocument document = new AzureTextAnalyticsDocument();
+        document.setId("1");
+        document.setText(text);
+        document.setLanguage(language);
 
-        JsonArray documents = new JsonArray();
+        List<AzureTextAnalyticsDocument> documents = new ArrayList<>();
         documents.add(document);
 
-        JsonObject body = new JsonObject();
-        body.add("documents", documents);
-        return body;
+        AzureTextAnalyticsRequest body = new AzureTextAnalyticsRequest();
+        body.setDocuments(documents);
+        return new Gson().toJsonTree(body);
     }
 
     private Double parseSentimentResponse(JsonElement response) {
-        return response
-            .getAsJsonObject()
-            .getAsJsonArray("documents")
+        return new Gson().fromJson(response, AzureTextAnalyticsSentimentResponse.class)
+            .getDocuments()
             .get(0)
-            .getAsJsonObject()
-            .get("score")
-            .getAsDouble();
+            .getScore();
     }
 
     private List<String> parseKeyPhrasesResponse(JsonElement response) {
-        JsonArray keyPhrases = response
-            .getAsJsonObject()
-            .getAsJsonArray("documents")
+        return new Gson().fromJson(response, AzureTextAnalyticsKeyphrasesResponse.class)
+            .getDocuments()
             .get(0)
-            .getAsJsonObject()
-            .get("keyPhrases")
-            .getAsJsonArray();
-
-        return StreamSupport.stream(keyPhrases.spliterator(), false)
-            .map(JsonElement::getAsString)
-            .collect(Collectors.toList());
+            .getKeyPhrases();
     }
 }
