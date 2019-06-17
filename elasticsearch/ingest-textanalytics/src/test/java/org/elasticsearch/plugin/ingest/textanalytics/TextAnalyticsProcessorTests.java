@@ -19,7 +19,7 @@ public class TextAnalyticsProcessorTests extends ESTestCase {
     @SuppressWarnings("unchecked")
     public void testThatProcessorAddsSentimentAndKeyPhrases() {
         Map<String, Object> document = new HashMap<>();
-        document.put(INPUT_FIELDS.getTextField(), "What a great day!");
+        document.put(INPUT_FIELDS.getTextField(), "What a great day today!");
         document.put(INPUT_FIELDS.getLanguageField(), "en");
 
         TextAnalyticsProcessor processor = new TextAnalyticsProcessor(randomAlphaOfLength(10), INPUT_FIELDS, TARGET_FIELD,
@@ -35,6 +35,13 @@ public class TextAnalyticsProcessorTests extends ESTestCase {
                     keyPhrases.add("great day");
                     return keyPhrases;
                 }
+
+                @Override
+                public List<String> fetchEntities(String text, String language) {
+                    List<String> entities = new ArrayList<>();
+                    entities.add("today");
+                    return entities;
+                }
             });
 
         IngestDocument ingestDocument = randomIngestDocument(random(), document);
@@ -48,6 +55,11 @@ public class TextAnalyticsProcessorTests extends ESTestCase {
         List<String> keyPhrases = ingestDocument.getFieldValue("output.key_phrases", List.class);
         assertEquals(1, keyPhrases.size());
         assertEquals("great day", keyPhrases.get(0));
+
+        assertTrue(ingestDocument.hasField("output.entities"));
+        List<String> entities = ingestDocument.getFieldValue("output.entities", List.class);
+        assertEquals(1, entities.size());
+        assertEquals("today", entities.get(0));
     }
 
     public void testThatProcessorDoesNotAddNullSentimentOrEmptyKeyPhrases() {
@@ -66,6 +78,11 @@ public class TextAnalyticsProcessorTests extends ESTestCase {
                 public List<String> fetchKeyPhrases(String text, String language) {
                     return emptyList();
                 }
+
+                @Override
+                public List<String> fetchEntities(String text, String language) {
+                    return emptyList();
+                }
             });
 
         IngestDocument ingestDocument = randomIngestDocument(random(), document);
@@ -73,5 +90,6 @@ public class TextAnalyticsProcessorTests extends ESTestCase {
 
         assertFalse(ingestDocument.hasField("output.sentiment"));
         assertFalse(ingestDocument.hasField("output.key_phrases"));
+        assertFalse(ingestDocument.hasField("output.entities"));
     }
 }

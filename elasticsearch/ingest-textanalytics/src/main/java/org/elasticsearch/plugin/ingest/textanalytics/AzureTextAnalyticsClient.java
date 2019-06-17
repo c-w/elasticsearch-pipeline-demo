@@ -1,9 +1,9 @@
 package org.elasticsearch.plugin.ingest.textanalytics;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.elasticsearch.plugin.ingest.textanalytics.dto.AzureTextAnalyticsDocument;
+import org.elasticsearch.plugin.ingest.textanalytics.dto.AzureTextAnalyticsEntitiesResponse;
+import org.elasticsearch.plugin.ingest.textanalytics.dto.AzureTextAnalyticsEntity;
 import org.elasticsearch.plugin.ingest.textanalytics.dto.AzureTextAnalyticsKeyphrasesResponse;
 import org.elasticsearch.plugin.ingest.textanalytics.dto.AzureTextAnalyticsRequest;
 import org.elasticsearch.plugin.ingest.textanalytics.dto.AzureTextAnalyticsSentimentResponse;
@@ -21,12 +21,14 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 
 class AzureTextAnalyticsClient implements TextAnalytics {
     private final JsonHttpClient httpClient;
     private final Map<String, String> authHeaders;
     private final URI keyPhrasesEndpoint;
     private final URI sentimentEndpoint;
+    private final URI entitiesEndpoint;
 
     AzureTextAnalyticsClient(JsonHttpClient httpClient, String accessKey, URL endpoint) throws MalformedURLException, URISyntaxException {
         this.httpClient = httpClient;
@@ -36,41 +38,70 @@ class AzureTextAnalyticsClient implements TextAnalytics {
 
         this.keyPhrasesEndpoint = new URL(endpoint, "/text/analytics/v2.1/keyPhrases").toURI();
         this.sentimentEndpoint = new URL(endpoint, "/text/analytics/v2.1/sentiment").toURI();
+        this.entitiesEndpoint = new URL(endpoint, "/text/analytics/v2.1/entities").toURI();
     }
 
     @Override
     public Optional<Double> fetchSentiment(String text, String language) {
-        JsonElement request = buildTextAnalyticsRequest(text, language);
+        AzureTextAnalyticsRequest request = buildTextAnalyticsRequest(text, language);
 
-        JsonElement response;
+        AzureTextAnalyticsSentimentResponse response;
         try {
-            response = httpClient.post(sentimentEndpoint, request, authHeaders);
+            response = httpClient.post(sentimentEndpoint, request, authHeaders, AzureTextAnalyticsSentimentResponse.class);
         } catch (ConnectTimeoutException | SocketTimeoutException e) {
             return Optional.empty();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        return Optional.of(parseSentimentResponse(response));
+        return Optional.of(response
+            .getDocuments()
+            .get(0)
+            .getScore());
     }
 
     @Override
     public List<String> fetchKeyPhrases(String text, String language) {
-        JsonElement request = buildTextAnalyticsRequest(text, language);
+        AzureTextAnalyticsRequest request = buildTextAnalyticsRequest(text, language);
 
-        JsonElement response;
+        AzureTextAnalyticsKeyphrasesResponse response;
         try {
-            response = httpClient.post(keyPhrasesEndpoint, request, authHeaders);
+            response = httpClient.post(keyPhrasesEndpoint, request, authHeaders, AzureTextAnalyticsKeyphrasesResponse.class);
         } catch (ConnectTimeoutException | SocketTimeoutException e) {
             return emptyList();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        return parseKeyPhrasesResponse(response);
+        return response
+            .getDocuments()
+            .get(0)
+            .getKeyPhrases();
     }
 
-    private JsonElement buildTextAnalyticsRequest(String text, String language) {
+    @Override
+    public List<String> fetchEntities(String text, String language) {
+        AzureTextAnalyticsRequest request = buildTextAnalyticsRequest(text, language);
+
+        AzureTextAnalyticsEntitiesResponse response;
+        try {
+            response = httpClient.post(entitiesEndpoint, request, authHeaders, AzureTextAnalyticsEntitiesResponse.class);
+        } catch (ConnectTimeoutException | SocketTimeoutException e) {
+            return emptyList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return response
+            .getDocuments()
+            .get(0)
+            .getEntities()
+            .stream()
+            .map(AzureTextAnalyticsEntity::getName)
+            .collect(toList());
+    }
+
+    private AzureTextAnalyticsRequest buildTextAnalyticsRequest(String text, String language) {
         AzureTextAnalyticsDocument document = new AzureTextAnalyticsDocument();
         document.setId("1");
         document.setText(text);
@@ -81,20 +112,6 @@ class AzureTextAnalyticsClient implements TextAnalytics {
 
         AzureTextAnalyticsRequest body = new AzureTextAnalyticsRequest();
         body.setDocuments(documents);
-        return new Gson().toJsonTree(body);
-    }
-
-    private Double parseSentimentResponse(JsonElement response) {
-        return new Gson().fromJson(response, AzureTextAnalyticsSentimentResponse.class)
-            .getDocuments()
-            .get(0)
-            .getScore();
-    }
-
-    private List<String> parseKeyPhrasesResponse(JsonElement response) {
-        return new Gson().fromJson(response, AzureTextAnalyticsKeyphrasesResponse.class)
-            .getDocuments()
-            .get(0)
-            .getKeyPhrases();
+        return body;
     }
 }

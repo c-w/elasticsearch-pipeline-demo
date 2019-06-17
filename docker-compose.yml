@@ -54,6 +54,8 @@ services:
     environment:
       SENTIMENT_URL: 'http://textanalytics-sentiment:5000'
       KEYPHRASES_URL: 'http://textanalytics-keyphrases:5000'
+      ENTITIES_URL: '${AZURE_TEXT_ANALYTICS_ENDPOINT}'
+      AZURE_TEXT_ANALYTICS_KEY: '${AZURE_TEXT_ANALYTICS_KEY}'
     links:
       - textanalytics-keyphrases
       - textanalytics-sentiment

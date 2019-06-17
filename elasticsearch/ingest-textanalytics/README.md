@@ -26,9 +26,10 @@ PUT /my-index/my-type/1?pipeline=textanalytics-pipeline
 
 GET /my-index/my-type/1
 {
-  "doc_text" : "What a great day!",
+  "doc_text" : "What a great day today!",
   "doc_lang" : "en",
   "textanalytics": {
+    "entities": ["today"],
     "key_phrases": ["great day"],
     "sentiment": 1
   }
@@ -45,7 +46,6 @@ GET /my-index/my-type/2
   "doc_text" : "That makes me sad :(",
   "doc_lang" : "en",
   "textanalytics": {
-    "key_phrases": [],
     "sentiment": 0.05
   }
 }
@@ -59,18 +59,16 @@ GET /my-index/my-type/2
 | --------- | -------- | ------- | ----------- |
 | text_field | yes | - | The field from which to get the document text |
 | language_field | yes | - | The field from which to get the document language |
-| target_field | no | textanalytics | The field that will hold the text textAnalytics |
-| timeout_seconds | no | 5 | The timeout for text textAnalytics requests |
-| retry_interval_seconds | no | 1 | The interval between retries of failed text textAnalytics requests |
+| target_field | no | textanalytics | The field that will hold the text analytics |
 
 ### Elasticsearch settings
 
 | Setting | Required | Default | Description |
 | ------- | -------- | ------- | ----------- |
-| ingest.textanalytics.endpoint | yes | - | Endpoint for the Azure text textAnalytics service |
-| ingest.textanalytics.key | yes | - | Access key for the Azure text textAnalytics service |
-| ingest.textanalytics.requesttimeout | no | 5 | Timeout (in seconds) for text textAnalytics requests |
-| ingest.textanalytics.retryinterval | no | 1 | Interval (in seconds) between retries of failed text textAnalytics requests |
+| ingest.textanalytics.endpoint | yes | - | Endpoint for the Azure text analytics service |
+| ingest.textanalytics.key | yes | - | Access key for the Azure text analytics service |
+| ingest.textanalytics.requesttimeout | no | 5 | Timeout (in seconds) for text analytics requests |
+| ingest.textanalytics.retryinterval | no | 1 | Interval (in seconds) between retries of failed text analytics requests |
 
 ## Setup
 

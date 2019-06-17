@@ -1,5 +1,6 @@
 package org.elasticsearch.plugin.ingest.textanalytics;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -32,14 +33,16 @@ class JsonHttpClient {
         this(defaultHttpClient(retryIntervalSeconds), defaultRequestConfig(timeoutSeconds));
     }
 
-    JsonElement post(URI uri, JsonElement body, Map<String, String> headers) throws IOException {
+    <TRequest, TResponse> TResponse post(URI uri, TRequest body, Map<String, String> headers,
+                                         Class<TResponse> responseType) throws IOException {
         HttpPost request = new HttpPost(uri);
         request.setConfig(requestConfig);
         request.addHeader("Content-Type", "application/json");
         headers.forEach(request::addHeader);
-        request.setEntity(new StringEntity(body.toString()));
+        request.setEntity(new StringEntity(toJson(body)));
 
-        return executeJsonRequest(request);
+        JsonElement response = executeJsonRequest(request);
+        return fromJson(response, responseType);
     }
 
     private JsonElement executeJsonRequest(HttpUriRequest request) throws IOException {
@@ -74,5 +77,27 @@ class JsonHttpClient {
                 }
             })
             .build();
+    }
+
+    private static <T> String toJson(T item) {
+        SpecialPermission.check();
+
+        try {
+            return AccessController.doPrivileged((PrivilegedExceptionAction<String>) () ->
+                new Gson().toJsonTree(item).toString());
+        } catch (PrivilegedActionException e) {
+            throw new RuntimeException(e.getCause());
+        }
+    }
+
+    private static <T> T fromJson(JsonElement item, Class<T> classOfT) {
+        SpecialPermission.check();
+
+        try {
+            return AccessController.doPrivileged((PrivilegedExceptionAction<T>) () ->
+                new Gson().fromJson(item, classOfT));
+        } catch (PrivilegedActionException e) {
+            throw new RuntimeException(e.getCause());
+        }
     }
 }

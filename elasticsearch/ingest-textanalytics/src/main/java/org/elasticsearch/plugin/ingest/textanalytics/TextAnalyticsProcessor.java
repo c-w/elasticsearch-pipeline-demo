@@ -40,6 +40,11 @@ public class TextAnalyticsProcessor extends AbstractProcessor {
             output.put("key_phrases", keyPhrases);
         }
 
+        List<String> entities = textAnalytics.fetchEntities(text, language);
+        if (!entities.isEmpty()) {
+            output.put("entities", entities);
+        }
+
         ingestDocument.setFieldValue(targetField, output);
 
         return ingestDocument;

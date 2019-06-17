@@ -1,7 +1,5 @@
 package org.elasticsearch.plugin.ingest.textanalytics;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import org.elasticsearch.test.ESTestCase;
 
 import java.net.URI;
@@ -13,17 +11,38 @@ public class JsonHttpClientTests extends ESTestCase {
         JsonHttpClient client = new JsonHttpClient(10, 1);
 
         URI uri = new URI("https://postman-echo.com/post");
-        JsonObject body = new JsonObject();
-        body.addProperty("echo", "message");
+        TestRequest body = new TestRequest();
+        body.setEcho("message");
         Map<String, String> headers = new HashMap<>();
 
-        JsonElement response = client.post(uri, body, headers);
+        TestResponse response = client.post(uri, body, headers, TestResponse.class);
 
-        assertEquals(
-            "message",
-            response.getAsJsonObject()
-                .getAsJsonObject("data")
-                .get("echo")
-                .getAsString());
+        assertEquals("message", response.getData().getEcho());
+    }
+
+    @SuppressWarnings("unused,WeakerAccess")
+    public static class TestRequest {
+        private String echo;
+
+        public String getEcho() {
+            return echo;
+        }
+
+        public void setEcho(String echo) {
+            this.echo = echo;
+        }
+    }
+
+    @SuppressWarnings("unused,WeakerAccess")
+    public static class TestResponse {
+        private TestRequest data;
+
+        public TestRequest getData() {
+            return data;
+        }
+
+        public void setData(TestRequest data) {
+            this.data = data;
+        }
     }
 }
