@@ -1,29 +1,29 @@
 {
-  "description" : "Ingestion pipeline",
-  "processors" : [
+  "description": "Ingestion pipeline",
+  "processors": [
     {
-      "azurestorage" : {
-        "container_field" : "azurestorage.container",
-        "blob_field" : "azurestorage.blob",
+      "azurestorage": {
+        "container_field": "azurestorage.container",
+        "blob_field": "azurestorage.blob",
         "target_field": "doc.raw"
       }
     },
     {
-      "attachment" : {
-        "field" : "doc.raw",
+      "attachment": {
+        "field": "doc.raw",
         "target_field": "doc"
       }
     },
     {
-      "opennlp" : {
-        "field" : "doc.content",
-        "target_field" : "opennlp"
+      "opennlp": {
+        "field": "doc.content",
+        "target_field": "opennlp"
       }
     },
     {
-      "textanalytics" : {
-        "text_field" : "doc.content",
-        "language_field" : "doc.language",
+      "textanalytics": {
+        "text_field": "doc.content",
+        "language_field": "doc.language",
         "target_field": "textanalytics"
       }
     }
