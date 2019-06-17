@@ -55,6 +55,7 @@ services:
       SENTIMENT_URL: 'http://textanalytics-sentiment:5000'
       KEYPHRASES_URL: 'http://textanalytics-keyphrases:5000'
     links:
+      - textanalytics-keyphrases
       - textanalytics-sentiment
 
   textanalytics-sentiment:
