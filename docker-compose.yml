@@ -62,13 +62,13 @@ services:
 
   textanalytics-sentiment:
     image: mcr.microsoft.com/azure-cognitive-services/sentiment:latest
-    command: ["Eula=accept", "Billing=${AZURE_TEXT_ANALYTICS_ENDPOINT}", "ApiKey=${AZURE_TEXT_ANALYTICS_KEY}"]
+    command: ['Eula=accept', 'Billing=${AZURE_TEXT_ANALYTICS_ENDPOINT}', 'ApiKey=${AZURE_TEXT_ANALYTICS_KEY}']
     ports:
       - 5001:5000
 
   textanalytics-keyphrases:
     image: mcr.microsoft.com/azure-cognitive-services/keyphrase:latest
-    command: ["Eula=accept", "Billing=${AZURE_TEXT_ANALYTICS_ENDPOINT}", "ApiKey=${AZURE_TEXT_ANALYTICS_KEY}"]
+    command: ['Eula=accept', 'Billing=${AZURE_TEXT_ANALYTICS_ENDPOINT}', 'ApiKey=${AZURE_TEXT_ANALYTICS_KEY}']
     ports:
       - 5002:5000
 
