@@ -16,10 +16,13 @@ RUN invoke lint
 
 FROM python:${PYTHON_VERSION}-slim AS runtime
 
+RUN useradd -ms /bin/sh pyuser
+
 COPY --from=builder /deps /deps
 RUN pip install --no-cache-dir /deps/*.whl
 
-COPY --from=builder /app /app
+COPY --from=builder --chown=pyuser:pyuser /app /app
 
+USER pyuser
 WORKDIR /app
 ENTRYPOINT ["invoke"]
