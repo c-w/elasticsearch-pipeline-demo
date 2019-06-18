@@ -22,7 +22,7 @@ services:
     ports:
       - 9200:9200
       - 9300:9300
-    links:
+    depends_on:
       - azurestorage
       - textanalytics-sentiment
 
@@ -39,7 +39,7 @@ services:
       ES_PORT: '9200'
       ES_INDEX: '${ELASTIC_SEARCH_INDEX_NAME}'
       ES_PIPELINE: '${ELASTIC_SEARCH_PIPELINE_NAME}'
-    links:
+    depends_on:
       - elasticsearch
 
   elasticsearch-ui:
@@ -56,7 +56,7 @@ services:
       KEYPHRASES_URL: 'http://textanalytics-keyphrases:5000'
       ENTITIES_URL: '${AZURE_TEXT_ANALYTICS_ENDPOINT}'
       AZURE_TEXT_ANALYTICS_KEY: '${AZURE_TEXT_ANALYTICS_KEY}'
-    links:
+    depends_on:
       - textanalytics-keyphrases
       - textanalytics-sentiment
 
@@ -85,5 +85,5 @@ services:
     environment:
       AZURE_STORAGE_CONNECTION_STRING: 'AccountName=${AZURE_STORAGE_ACCOUNT_NAME};AccountKey=${AZURE_STORAGE_ACCOUNT_KEY};BlobEndpoint=${AZURE_STORAGE_BLOB_ENDPOINT};'
       AZURE_STORAGE_CONTAINER: '${AZURE_STORAGE_CONTAINER}'
-    links:
+    depends_on:
       - azurestorage
