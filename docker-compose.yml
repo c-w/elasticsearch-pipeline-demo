@@ -15,7 +15,7 @@ services:
       ES_JAVA_OPTS: '-Xms512m -Xmx512m'
       ingest.textanalytics.endpoint: 'http://textanalytics:5000'
       ingest.textanalytics.key: 'not-used'
-      ingest.azurestorage.connectionstring: '${AZURE_STORAGE_CONNECTION_STRING}'
+      ingest.azurestorage.connectionstring: 'AccountName=${AZURE_STORAGE_ACCOUNT_NAME};AccountKey=${AZURE_STORAGE_ACCOUNT_KEY};BlobEndpoint=${AZURE_STORAGE_BLOB_ENDPOINT};'
       ingest.opennlp.model.file.persons: 'en-ner-persons.bin'
       ingest.opennlp.model.file.dates: 'en-ner-dates.bin'
       ingest.opennlp.model.file.locations: 'en-ner-locations.bin'
@@ -73,16 +73,17 @@ services:
       - 5002:5000
 
   azurestorage:
-    image: arafato/azurite:2.6.5
+    image: mcr.microsoft.com/azure-blob-storage:latest
     environment:
-      executable: 'blob'
+      LOCAL_STORAGE_ACCOUNT_NAME: '${AZURE_STORAGE_ACCOUNT_NAME}'
+      LOCAL_STORAGE_ACCOUNT_KEY: '${AZURE_STORAGE_ACCOUNT_KEY}'
     ports:
-      - 10000:10000
+      - 11002:11002
 
   azurestorage-init:
     build: azurestorage
     environment:
-      AZURE_STORAGE_CONNECTION_STRING: '${AZURE_STORAGE_CONNECTION_STRING}'
+      AZURE_STORAGE_CONNECTION_STRING: 'AccountName=${AZURE_STORAGE_ACCOUNT_NAME};AccountKey=${AZURE_STORAGE_ACCOUNT_KEY};BlobEndpoint=${AZURE_STORAGE_BLOB_ENDPOINT};'
       AZURE_STORAGE_CONTAINER: '${AZURE_STORAGE_CONTAINER}'
     links:
       - azurestorage
