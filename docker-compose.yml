@@ -9,8 +9,8 @@ services:
       discovery.type: 'single-node'
       http.port: '9200'
       http.cors.enabled: 'true'
-      http.cors.allow-origin: 'http://localhost:1358,http://127.0.0.1:1358'
-      http.cors.allow-headers: 'X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization'
+      http.cors.allow-origin: 'http://localhost:1358,http://127.0.0.1:1358,http://127.0.0.1:3000'
+      http.cors.allow-headers: 'X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization,Access-Control-Allow-Headers,Accept'
       http.cors.allow-credentials: 'true'
       bootstrap.memory_lock: 'true'
       ES_JAVA_OPTS: '-Xms512m -Xmx512m'
@@ -97,3 +97,19 @@ services:
       AZURE_STORAGE_CONTAINER: '${AZURE_STORAGE_CONTAINER}'
     depends_on:
       - azurestorage
+
+  reactivesearch:
+    build:
+      context: reactivesearch
+      dockerfile: Dockerfile
+    command: npm start
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_ELASTIC_INDEX: '${ELASTIC_SEARCH_INDEX_NAME}'
+      REACT_APP_ELASTIC_URL: 'http://localhost:9200'
+    depends_on:
+      - elasticsearch-init
+      
