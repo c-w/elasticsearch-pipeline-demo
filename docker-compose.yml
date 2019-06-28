@@ -24,7 +24,7 @@ services:
       - 9300:9300
     depends_on:
       - azurestorage
-      - textanalytics-sentiment
+      - textanalytics
 
   elasticsearch-init:
     build: devtool
