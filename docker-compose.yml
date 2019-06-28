@@ -100,17 +100,13 @@ services:
 
   reactivesearch:
     build:
-      context: reactivesearch/
+      context: ./reactivesearch
       dockerfile: Dockerfile
-    command: npm start
-    volumes:
-      - .:/app
-      - '/app/node_modules'
+      args:
+        REACT_APP_ELASTIC_INDEX: '${ELASTIC_SEARCH_INDEX_NAME}'
+        REACT_APP_ELASTIC_URL: 'http://elasticsearch:9200'
     ports:
-      - "3000:3000"
-    environment:
-      REACT_APP_ELASTIC_INDEX: '${ELASTIC_SEARCH_INDEX_NAME}'
-      REACT_APP_ELASTIC_URL: 'http://localhost:9200'
+      - "3000:80"      
     depends_on:
       - elasticsearch-init
       
