@@ -3,6 +3,7 @@ version: '3'
 services:
 
   elasticsearch:
+    image: '${CONTAINER_REGISTRY_URL}/elasticsearch${BUILD_ID}:${BUILD_TAG}'
     build: elasticsearch
     environment:
       discovery.type: 'single-node'
@@ -27,7 +28,9 @@ services:
       - textanalytics
 
   elasticsearch-init:
+    image: '${CONTAINER_REGISTRY_URL}/elasticsearch-init${BUILD_ID}:${BUILD_TAG}'
     build: devtool
+    restart: "no"
     command: >
       create-es-index
       create-es-pipeline --path /app/ingestion.json
@@ -43,11 +46,13 @@ services:
       - elasticsearch
 
   elasticsearch-ui:
-    image: appbaseio/dejavu:3.3.1
+    image: '${CONTAINER_REGISTRY_URL}/elasticsearch-ui${BUILD_ID}:${BUILD_TAG}'
+    build: rawimages/elasticsearch-ui
     ports:
       - 1358:1358
 
   textanalytics:
+    image: '${CONTAINER_REGISTRY_URL}/textanalytics${BUILD_ID}:${BUILD_TAG}'
     build: textanalytics
     ports:
       - 5000:5000
@@ -61,19 +66,22 @@ services:
       - textanalytics-sentiment
 
   textanalytics-sentiment:
-    image: mcr.microsoft.com/azure-cognitive-services/sentiment:latest
+    image: '${CONTAINER_REGISTRY_URL}/textanalytics-sentiment${BUILD_ID}:${BUILD_TAG}'
+    build: rawimages/textanalytics-sentiment
     command: ['Eula=accept', 'Billing=${AZURE_TEXT_ANALYTICS_ENDPOINT}', 'ApiKey=${AZURE_TEXT_ANALYTICS_KEY}']
     ports:
       - 5001:5000
 
   textanalytics-keyphrases:
-    image: mcr.microsoft.com/azure-cognitive-services/keyphrase:latest
+    image: '${CONTAINER_REGISTRY_URL}/textanalytics-keyphrases${BUILD_ID}:${BUILD_TAG}'
+    build: rawimages/textanalytics-keyphrases
     command: ['Eula=accept', 'Billing=${AZURE_TEXT_ANALYTICS_ENDPOINT}', 'ApiKey=${AZURE_TEXT_ANALYTICS_KEY}']
     ports:
       - 5002:5000
 
   azurestorage:
-    image: mcr.microsoft.com/azure-blob-storage:latest
+    image: '${CONTAINER_REGISTRY_URL}/azurestorage${BUILD_ID}:${BUILD_TAG}'
+    build: rawimages/azurestorage
     environment:
       LOCAL_STORAGE_ACCOUNT_NAME: '${AZURE_STORAGE_ACCOUNT_NAME}'
       LOCAL_STORAGE_ACCOUNT_KEY: '${AZURE_STORAGE_ACCOUNT_KEY}'
@@ -81,7 +89,9 @@ services:
       - 11002:11002
 
   azurestorage-init:
+    image: '${CONTAINER_REGISTRY_URL}/azurestorage-init${BUILD_ID}:${BUILD_TAG}'
     build: azurestorage
+    restart: "no"
     environment:
       AZURE_STORAGE_CONNECTION_STRING: 'AccountName=${AZURE_STORAGE_ACCOUNT_NAME};AccountKey=${AZURE_STORAGE_ACCOUNT_KEY};BlobEndpoint=${AZURE_STORAGE_BLOB_ENDPOINT};'
       AZURE_STORAGE_CONTAINER: '${AZURE_STORAGE_CONTAINER}'
