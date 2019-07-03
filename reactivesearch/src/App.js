@@ -17,7 +17,7 @@ class App extends React.Component {
   }
 
   onSelectDocument = res => {
-    this.setState({ selectedDocument: res.doc.content });
+    this.setState({ selectedDocument: res });
   };
 
   render() {
