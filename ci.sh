@@ -2,8 +2,6 @@
 
 # RUN SCRIPT IN STRICT MODE
 # Ensure no variable is unset
-# If BUILD_ID is set, override in CI
-BUILD_ID=''
 oc_project_name=''
 is_deployed_to_cluster=''
 set -euo pipefail
@@ -24,9 +22,11 @@ cleanup () {
             --password "$SERVICE_PRINCIPAL_PASSWORD" \
             --tenant "$SERVICE_PRINCIPAL_TENANT_ID" \
             --output none
-        local images=($(docker-compose config | grep image: | sed "s|$CONTAINER_REGISTRY_URL/||g" | sed "s|image:||g" | tr -d ' '))
+        local images
+        local registry_name
+        images=($(docker-compose config | grep image: | sed "s|$CONTAINER_REGISTRY_URL/||g" | sed "s|image:||g" | tr -d ' '))
         for image in ${images[@]}; do
-            local registry_name="${CONTAINER_REGISTRY_URL%%.*}"
+            registry_name="${CONTAINER_REGISTRY_URL%%.*}"
             az acr repository delete --name "$registry_name" --image "$image" --yes
         done
     fi
@@ -39,10 +39,8 @@ trap cleanup EXIT
 # Necessary because of bug (?) where kompose does not use .env
 # Additionally, using these variables in this script
 set -o allexport; source .env; set +o allexport
-if [ -z "$BUILD_ID" ]; then
-    BUILD_ID=$(git rev-parse --abbrev-ref HEAD | tr '[:upper:]' '[:lower:]')
-    export BUILD_ID
-fi
+BUILD_TAG=$(echo $BUILD_TAG | tr "/" "-")
+export BUILD_TAG
 
 
 # RUN UNIT TESTS
@@ -57,7 +55,7 @@ oc login "$OC_MASTER_SERVER_DNS" \
 
 
 # CREATE NEW CLUSTER NAMESPACE
-oc_project_name="ci-$BUILD_ID-$(uuidgen)"
+oc_project_name="ci-$BUILD_TAG"
 oc new-project "$oc_project_name"
 
 

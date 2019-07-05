@@ -3,7 +3,7 @@ version: '3'
 services:
 
   elasticsearch:
-    image: '${CONTAINER_REGISTRY_URL}/elasticsearch${BUILD_ID}:${BUILD_TAG}'
+    image: '${CONTAINER_REGISTRY_URL}/elasticsearch:${BUILD_TAG}'
     build: elasticsearch
     environment:
       discovery.type: 'single-node'
@@ -28,7 +28,7 @@ services:
       - textanalytics
 
   elasticsearch-init:
-    image: '${CONTAINER_REGISTRY_URL}/elasticsearch-init${BUILD_ID}:${BUILD_TAG}'
+    image: '${CONTAINER_REGISTRY_URL}/elasticsearch-init:${BUILD_TAG}'
     build: devtool
     restart: "no"
     command: >
@@ -46,13 +46,13 @@ services:
       - elasticsearch
 
   elasticsearch-ui:
-    image: '${CONTAINER_REGISTRY_URL}/elasticsearch-ui${BUILD_ID}:${BUILD_TAG}'
+    image: '${CONTAINER_REGISTRY_URL}/elasticsearch-ui:${BUILD_TAG}'
     build: rawimages/elasticsearch-ui
     ports:
       - 1358:1358
 
   textanalytics:
-    image: '${CONTAINER_REGISTRY_URL}/textanalytics${BUILD_ID}:${BUILD_TAG}'
+    image: '${CONTAINER_REGISTRY_URL}/textanalytics:${BUILD_TAG}'
     build: textanalytics
     ports:
       - 5000:5000
@@ -66,21 +66,21 @@ services:
       - textanalytics-sentiment
 
   textanalytics-sentiment:
-    image: '${CONTAINER_REGISTRY_URL}/textanalytics-sentiment${BUILD_ID}:${BUILD_TAG}'
+    image: '${CONTAINER_REGISTRY_URL}/textanalytics-sentiment:${BUILD_TAG}'
     build: rawimages/textanalytics-sentiment
     command: ['Eula=accept', 'Billing=${AZURE_TEXT_ANALYTICS_ENDPOINT}', 'ApiKey=${AZURE_TEXT_ANALYTICS_KEY}']
     ports:
       - 5001:5000
 
   textanalytics-keyphrases:
-    image: '${CONTAINER_REGISTRY_URL}/textanalytics-keyphrases${BUILD_ID}:${BUILD_TAG}'
+    image: '${CONTAINER_REGISTRY_URL}/textanalytics-keyphrases:${BUILD_TAG}'
     build: rawimages/textanalytics-keyphrases
     command: ['Eula=accept', 'Billing=${AZURE_TEXT_ANALYTICS_ENDPOINT}', 'ApiKey=${AZURE_TEXT_ANALYTICS_KEY}']
     ports:
       - 5002:5000
 
   azurestorage:
-    image: '${CONTAINER_REGISTRY_URL}/azurestorage${BUILD_ID}:${BUILD_TAG}'
+    image: '${CONTAINER_REGISTRY_URL}/azurestorage:${BUILD_TAG}'
     build: rawimages/azurestorage
     environment:
       LOCAL_STORAGE_ACCOUNT_NAME: '${AZURE_STORAGE_ACCOUNT_NAME}'
@@ -89,7 +89,7 @@ services:
       - 11002:11002
 
   azurestorage-init:
-    image: '${CONTAINER_REGISTRY_URL}/azurestorage-init${BUILD_ID}:${BUILD_TAG}'
+    image: '${CONTAINER_REGISTRY_URL}/azurestorage-init:${BUILD_TAG}'
     build: azurestorage
     restart: "no"
     environment:

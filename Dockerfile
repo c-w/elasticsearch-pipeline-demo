@@ -3,7 +3,7 @@ FROM ubuntu:bionic
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN apt-get update && \
-    apt-get install -y curl uuid-runtime git-core
+    apt-get install -y curl git-core
 
 # INSTALL DOCKER
 RUN curl -fsSL https://get.docker.com | bash
