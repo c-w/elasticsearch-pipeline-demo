@@ -2,34 +2,35 @@
 
 # RUN SCRIPT IN STRICT MODE
 # Ensure no variable is unset
+# If BUILD_ID is set, override in CI
 BUILD_ID=''
-OC_PROJECT_NAME=''
-IS_DEPLOYED_TO_CLUSTER=''
+oc_project_name=''
+is_deployed_to_cluster=''
 set -euo pipefail
 IFS=$'\n\t'
 
 
 # DELETE RESOURCES WHEN FINISHED
 cleanup () {
-    STATUS_CODE=$?
-    if [ "$OC_PROJECT_NAME" ]; then
+    local status_code=$?
+    if [ "$oc_project_name" ]; then
         oc project default
-        oc delete project "$OC_PROJECT_NAME"
+        oc delete project "$oc_project_name"
     fi
-    if [ "$IS_DEPLOYED_TO_CLUSTER" ]; then
+    if [ "$is_deployed_to_cluster" ]; then
         # DELETE CI IMAGES
         az login --service-principal \
             --username "$SERVICE_PRINCIPAL_APP_ID" \
             --password "$SERVICE_PRINCIPAL_PASSWORD" \
             --tenant "$SERVICE_PRINCIPAL_TENANT_ID" \
             --output none
-        IMAGES=$(docker-compose config | grep image: | sed s-"$CONTAINER_REGISTRY_URL/"--g | sed s-image:--g | sed s-' '--g)
-        for IMAGE in $IMAGES; do
-            REGISTRY_NAME=$(echo "$CONTAINER_REGISTRY_URL" | cut -f1 -d".")
-            az acr repository delete --name "$REGISTRY_NAME" --image "$IMAGE" --yes
+        local images=($(docker-compose config | grep image: | sed "s|$CONTAINER_REGISTRY_URL/||g" | sed "s|image:||g" | tr -d ' '))
+        for image in ${images[@]}; do
+            local registry_name="${CONTAINER_REGISTRY_URL%%.*}"
+            az acr repository delete --name "$registry_name" --image "$image" --yes
         done
     fi
-    exit $STATUS_CODE
+    exit $status_code
 }
 trap cleanup EXIT
 
@@ -39,7 +40,7 @@ trap cleanup EXIT
 # Additionally, using these variables in this script
 set -o allexport; source .env; set +o allexport
 if [ -z "$BUILD_ID" ]; then
-    BUILD_ID=$(echo "$(git rev-parse --abbrev-ref HEAD)" | awk '{print tolower($0)}')
+    BUILD_ID=$(git rev-parse --abbrev-ref HEAD | tr '[:upper:]' '[:lower:]')
     export BUILD_ID
 fi
 
@@ -56,9 +57,8 @@ oc login "$OC_MASTER_SERVER_DNS" \
 
 
 # CREATE NEW CLUSTER NAMESPACE
-UUID=$(uuidgen)
-OC_PROJECT_NAME="ci-$BUILD_ID-$UUID"
-oc new-project "$OC_PROJECT_NAME"
+oc_project_name="ci-$BUILD_ID-$(uuidgen)"
+oc new-project "$oc_project_name"
 
 
 # ALLOW CONTAINERS TO RUN AS ROOT
@@ -72,7 +72,7 @@ docker login \
     --password "$SERVICE_PRINCIPAL_PASSWORD" \
     "$CONTAINER_REGISTRY_URL"
 # Openshift base64 bug encoding workaround
-DOCKER_CONFIG_B64=$(base64 -w0 ~/.docker/config.json)
+docker_config_b64=$(base64 -w0 ~/.docker/config.json)
 oc create secret docker-registry acr-auth \
     --docker-server=unused \
     --docker-username=unused \
@@ -81,7 +81,7 @@ oc create secret docker-registry acr-auth \
     --dry-run \
     -o yaml \
 > acr-auth.yaml
-sed -i "s/  .dockerconfigjson.*/  .dockerconfigjson: $DOCKER_CONFIG_B64/" acr-auth.yaml
+sed -i "s/  .dockerconfigjson.*/  .dockerconfigjson: $docker_config_b64/" acr-auth.yaml
 oc apply -f acr-auth.yaml
 rm acr-auth.yaml
 
@@ -91,7 +91,7 @@ oc secrets link builder acr-auth
 
 # PUSH IMAGES TO ACR AND DEPLOY TO CLUSTER
 kompose up --provider=openshift
-IS_DEPLOYED_TO_CLUSTER=TRUE
+is_deployed_to_cluster=TRUE
 
 
 # RUN INTEGRATION TESTS
