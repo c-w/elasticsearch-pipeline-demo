@@ -23,3 +23,22 @@ The command will:
 ## Development links
 
 - [ElasticSearch UI](http://localhost:1358/?appname=devindex&url=http://localhost:9200)
+
+## CI
+Make sure the `.env` file is populated.
+
+Then, run the following snippets:
+
+```bash
+docker build -t ci .
+docker run -it -v /var/run/docker.sock:/var/run/docker.sock ci
+```
+
+This command will:
+
+- Run all unit tests.
+- Publish the built images to Azure Container Registry.
+- Deploy the services to a new project in an OpenShift cluster.
+- Run all integration tests.
+- Delete the images on Azure Container Registry.
+- Delete the project on the cluster.
