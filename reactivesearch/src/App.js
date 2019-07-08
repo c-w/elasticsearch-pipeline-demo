@@ -7,14 +7,14 @@ import {
 } from "@appbaseio/reactivesearch";
 import SearchResultList from "./components/SearchResultList";
 import DocumentView from "./components/DocumentView";
+import { getUrlParams } from "./utils";
 
 class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      selectedDocument: ""
-    };
-  }
+  state = {
+    selectedDocument: "",
+    elastic_index: getUrlParams("appname"),
+    elastic_url: getUrlParams("url")
+  };
 
   onSelectDocument = res => {
     this.setState({ selectedDocument: res });
@@ -24,8 +24,8 @@ class App extends React.Component {
     return (
       <div>
         <ReactiveBase
-          app={process.env.REACT_APP_ELASTIC_INDEX}
-          url={process.env.REACT_APP_ELASTIC_URL}
+          app={this.state.elastic_index}
+          url={this.state.elastic_url}
         >
           <div className="container">
             <div className="clearfix">
@@ -45,7 +45,7 @@ class App extends React.Component {
                     queryFormat="and"
                     placeholder="Search..."
                     iconPosition="left"
-                    autosuggest={true}
+                    autosuggest
                     filterLabel="search"
                   />
                 </div>

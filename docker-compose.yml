@@ -99,12 +99,7 @@ services:
       - azurestorage
 
   reactivesearch:
-    build:
-      context: ./reactivesearch
-      dockerfile: Dockerfile
-      args:
-        REACT_APP_ELASTIC_INDEX: '${ELASTIC_SEARCH_INDEX_NAME}'
-        REACT_APP_ELASTIC_URL: 'http://127.0.0.1:9200'
+    build: reactivesearch
     ports:
       - "3000:80"      
     depends_on:

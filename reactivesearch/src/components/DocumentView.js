@@ -1,5 +1,5 @@
 import React from "react";
-import _ from "lodash";
+import map from "lodash.map";
 
 function DocumentView(props) {
   const opennlp = props.selectedDocument.opennlp
@@ -12,8 +12,8 @@ function DocumentView(props) {
       <p>{props.selectedDocument ? props.selectedDocument.doc.content : ""}</p>
       <h3>OpenNLP Results</h3>
       <ul>
-        {_.map(opennlp, function(entityList, entityType) {
-          return _.map(entityList, function(entity, index) {
+        {map(opennlp, (entityList, entityType) => {
+          return map(entityList, (entity, index) => {
             return (
               <li key={index}>
                 <b>{entityType}</b>: {entity}
