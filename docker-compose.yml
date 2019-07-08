@@ -37,6 +37,8 @@ services:
       create-es-document --blob hello.docx --container '${AZURE_STORAGE_CONTAINER}'
       create-es-document --blob hello.pdf --container '${AZURE_STORAGE_CONTAINER}'
       create-es-document --blob opennlp.txt --container '${AZURE_STORAGE_CONTAINER}'
+      create-es-document --blob structured_doc.docx --container '${AZURE_STORAGE_CONTAINER}'
+      create-es-document --blob structured_doc.pdf --container '${AZURE_STORAGE_CONTAINER}'
     environment:
       ES_HOST: 'elasticsearch'
       ES_PORT: '9200'
