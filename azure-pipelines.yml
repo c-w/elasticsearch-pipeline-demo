@@ -1,8 +1,7 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
+pool: 'self-hosted-pool'
 
 steps:
 - script: |
