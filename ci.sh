@@ -60,6 +60,7 @@ oc_project_name="ci-$BUILD_TAG"
 existing_project=$(oc get project | grep "$oc_project_name " || true)
 if [ "$existing_project" ]; then
     echo "PROJECT ALREADY EXISTS, DELETING"
+    echo "TEST"
     is_deployed_to_cluster=TRUE
     cleanup
     is_deployed_to_cluster=''
