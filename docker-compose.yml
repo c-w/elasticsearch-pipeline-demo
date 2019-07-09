@@ -20,6 +20,7 @@ services:
       ingest.opennlp.model.file.persons: 'en-ner-persons.bin'
       ingest.opennlp.model.file.dates: 'en-ner-dates.bin'
       ingest.opennlp.model.file.locations: 'en-ner-locations.bin'
+      ingest.opennlp.model.file.organizations: 'en-ner-organization.bin'
     ports:
       - 9200:9200
       - 9300:9300
