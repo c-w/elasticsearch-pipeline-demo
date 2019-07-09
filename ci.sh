@@ -41,6 +41,8 @@ trap cleanup EXIT
 set -o allexport; source .env; set +o allexport
 BUILD_TAG=$(echo $BUILD_TAG | tr "/" "-")
 export BUILD_TAG
+echo "THIS IS THE BUILD TAG:"
+echo "$BUILD_TAG"
 
 
 # RUN UNIT TESTS
@@ -56,6 +58,12 @@ oc login "$OC_MASTER_SERVER_DNS" \
 
 # CREATE NEW CLUSTER NAMESPACE
 oc_project_name="ci-$BUILD_TAG"
+#existing_project=$(oc get project | grep "$oc_project_name ")
+#if ["$existing_project"]; then
+#    echo "PROJECT ALREADY EXISTS, DELETING"
+#    oc project default
+#    oc delete project "$oc_project_name"
+#fi
 oc new-project "$oc_project_name"
 
 
