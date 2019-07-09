@@ -43,6 +43,7 @@ BUILD_TAG=$(echo $BUILD_TAG | tr "/" "-")
 export BUILD_TAG
 echo "THIS IS THE BUILD TAG:"
 echo "$BUILD_TAG"
+echo "TEST"
 
 
 # RUN UNIT TESTS
