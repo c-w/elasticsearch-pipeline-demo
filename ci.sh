@@ -4,17 +4,15 @@
 # Ensure no variable is unset
 oc_project_name=''
 is_deployed_to_cluster=''
-set -euo pipefail
+set -eEuo pipefail
 IFS=$'\n\t'
 
 
 # DELETE RESOURCES WHEN FINISHED
 cleanup () {
     local status_code=$?
-    if [ "$oc_project_name" ]; then
-        oc project default
-        oc delete project "$oc_project_name"
-    fi
+    oc project default
+    oc delete project "$oc_project_name"
     if [ "$is_deployed_to_cluster" ]; then
         # DELETE CI IMAGES
         az login --service-principal \
@@ -30,9 +28,10 @@ cleanup () {
             az acr repository delete --name "$registry_name" --image "$image" --yes
         done
     fi
-    exit $status_code
+    if [ "$status_code" -ne 0 ]; then
+        exit $status_code
+    fi
 }
-trap cleanup EXIT
 
 
 # EXPORT ENVIRONMENT VARIABLES
@@ -43,7 +42,6 @@ BUILD_TAG=$(echo $BUILD_TAG | tr "/" "-")
 export BUILD_TAG
 echo "THIS IS THE BUILD TAG:"
 echo "$BUILD_TAG"
-echo "TEST"
 
 
 # RUN UNIT TESTS
@@ -59,13 +57,15 @@ oc login "$OC_MASTER_SERVER_DNS" \
 
 # CREATE NEW CLUSTER NAMESPACE
 oc_project_name="ci-$BUILD_TAG"
-#existing_project=$(oc get project | grep "$oc_project_name ")
-#if ["$existing_project"]; then
-#    echo "PROJECT ALREADY EXISTS, DELETING"
-#    oc project default
-#    oc delete project "$oc_project_name"
-#fi
+existing_project=$(oc get project | grep "$oc_project_name " || true)
+if [ "$existing_project" ]; then
+    echo "PROJECT ALREADY EXISTS, DELETING"
+    is_deployed_to_cluster=TRUE
+    cleanup
+    is_deployed_to_cluster=''
+fi
 oc new-project "$oc_project_name"
+trap cleanup ERR
 
 
 # ALLOW CONTAINERS TO RUN AS ROOT
