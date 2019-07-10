@@ -1,5 +1,4 @@
 import React from "react";
-import map from "lodash.map";
 
 export default function DocumentView(props) {
   const opennlp = props.selectedDocument.opennlp
@@ -12,15 +11,13 @@ export default function DocumentView(props) {
       <p>{props.selectedDocument ? props.selectedDocument.doc.content : ""}</p>
       <h3>OpenNLP Results</h3>
       <ul>
-        {map(opennlp, (entityList, entityType) => {
-          return map(entityList, (entity, index) => {
-            return (
-              <li key={index}>
-                <b>{entityType}</b>: {entity}
-              </li>
-            );
-          });
-        })}
+        {Object.entries(opennlp).map(([entityType, entityList]) =>
+          entityList.map((entity, index) =>
+            <li key={index}>
+              <b>{entityType}</b>: {entity}
+            </li>
+          )
+        )}
       </ul>
     </div>
   );

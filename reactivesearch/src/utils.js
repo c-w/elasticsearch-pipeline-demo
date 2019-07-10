@@ -1,12 +1,8 @@
-import reduce from "lodash.reduce";
-
 export function getUrlParams(urlParam) {
-  var search = window.location.search.slice(1).split("&");
-  var paramDict = reduce(
-    search,
+  const search = window.location.search.slice(1).split("&");
+  const paramDict = search.reduce(
     (obj, param) => {
-      var key, value;
-      [key, value] = param.split("=");
+      const [key, value] = param.split("=");
       obj[key] = value;
       return obj;
     },
