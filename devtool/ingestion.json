@@ -19,6 +19,13 @@
         "field": "doc.content",
         "target_field": "opennlp"
       }
+    },
+    {
+      "textanalytics": {
+        "text_field": "doc.content",
+        "language_field": "doc.language",
+        "target_field": "textanalytics"
+      }
     }
   ]
 }
