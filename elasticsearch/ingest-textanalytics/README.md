@@ -1,6 +1,9 @@
 # Elasticsearch TextAnalytics Ingest Processor
 
 This processor analyzes documents via [Azure Text Analytics](https://azure.microsoft.com/en-us/services/cognitive-services/text-textAnalytics/).
+To make this work you must first have a [Cognitive Services Account](https://docs.microsoft.com/en-us/azure/cognitive-services/cognitive-services-apis-create-account) with a relevant subscription. 
+
+Then using the `AZURE_TEXT_ANALYTICS_ENDPOINT` and the `AZURE_TEXT_ANALYTICS_KEY` you will be able to access the service through API calls from the plugin. 
 
 ## Usage
 

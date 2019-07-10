@@ -20,6 +20,7 @@ services:
       ingest.opennlp.model.file.persons: 'en-ner-persons.bin'
       ingest.opennlp.model.file.dates: 'en-ner-dates.bin'
       ingest.opennlp.model.file.locations: 'en-ner-locations.bin'
+      ingest.opennlp.model.file.organizations: 'en-ner-organization.bin'
     ports:
       - 9200:9200
       - 9300:9300
@@ -37,6 +38,8 @@ services:
       create-es-document --blob hello.docx --container '${AZURE_STORAGE_CONTAINER}'
       create-es-document --blob hello.pdf --container '${AZURE_STORAGE_CONTAINER}'
       create-es-document --blob opennlp.txt --container '${AZURE_STORAGE_CONTAINER}'
+      create-es-document --blob structured_doc.docx --container '${AZURE_STORAGE_CONTAINER}'
+      create-es-document --blob structured_doc.pdf --container '${AZURE_STORAGE_CONTAINER}'
     environment:
       ES_HOST: 'elasticsearch'
       ES_PORT: '9200'
