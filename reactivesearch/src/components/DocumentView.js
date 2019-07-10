@@ -12,10 +12,12 @@ function EntityList(props) {
       <h3>{props.header}</h3>
       <ul>
         {entities.map(([entityType, entityList]) =>
-          (Array.isArray(entityList) ? entityList : [entityList]).map((entity, index) =>
-            <li key={index}>
-              <b>{entityType}</b>: {entity}
-            </li>
+          (Array.isArray(entityList) ? entityList : [entityList]).map(
+            (entity, index) => (
+              <li key={index}>
+                <b>{entityType}</b>: {entity}
+              </li>
+            )
           )
         )}
       </ul>
