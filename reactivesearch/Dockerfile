@@ -1,19 +1,30 @@
-# build environment
-FROM node:12.2.0-alpine as build
+FROM node:lts-stretch AS builder
 
-# build time args
+RUN wget https://github.com/m3ng9i/ran/releases/download/v0.1.4/ran_linux_arm64.zip \
+ && unzip ran_linux_arm64.zip \
+ && rm ran_linux_arm64.zip \
+ && mv ran_linux_arm64 /ran
+
 ARG REACT_APP_ELASTIC_INDEX
 ARG REACT_APP_ELASTIC_URL
-ENV REACT_APP_ELASTIC_INDEX $REACT_APP_ELASTIC_INDEX
-ENV REACT_APP_ELASTIC_URL $REACT_APP_ELASTIC_URL
+ENV REACT_APP_ELASTIC_INDEX ${REACT_APP_ELASTIC_INDEX}
+ENV REACT_APP_ELASTIC_URL ${REACT_APP_ELASTIC_URL}
 
 WORKDIR /app
+COPY package*.json ./
+RUN npm install
+
 COPY . .
-RUN npm install --silent && npm run build
+RUN npm run build
 
-# production environment
-FROM nginx:1.16.0-alpine
-COPY --from=build /app/build /usr/share/nginx/html
-EXPOSE 80
+FROM debian:stretch-slim AS runtime
 
-CMD ["nginx", "-g", "daemon off;"]
+RUN useradd -s /bin/sh web
+USER web
+
+COPY --chown=web:web --from=builder /ran /usr/local/bin
+COPY --chown=web:web --from=builder /app/build /app
+
+ENV PORT="3000"
+EXPOSE ${PORT}
+CMD ran --port ${PORT} --root /app

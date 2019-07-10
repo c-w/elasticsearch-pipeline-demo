@@ -45,7 +45,8 @@ Once done then run `./gradlew clean check` to package the latest version of the 
 
 ## Development links
 
-- [ElasticSearch UI](http://localhost:1358/?appname=devindex&url=http://localhost:9200)
+- [ElasticSearch management UI](http://localhost:1358/?appname=devindex&url=http://localhost:9200)
+- [ElasticSearch search UI](http://localhost:3000/?appname=devindex&url=http://localhost:9200)
 
 ## CI
 Make sure the `.env` file is populated.
