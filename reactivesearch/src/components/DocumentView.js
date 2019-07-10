@@ -23,14 +23,26 @@ function EntityList(props) {
   );
 }
 
+function DocumentContent(props) {
+  if (!props.selectedDocument) {
+    return null;
+  }
+
+  return (
+    <div>
+      <h3>Document Content</h3>
+      <p>{props.selectedDocument.doc.content}</p>
+    </div>
+  );
+}
+
 export default function DocumentView(props) {
   const opennlp = props.selectedDocument.opennlp || {};
   const textanalytics = props.selectedDocument.textanalytics || {};
 
   return (
     <div className="col col-12 px3">
-      <h3>Document Content</h3>
-      <p>{props.selectedDocument ? props.selectedDocument.doc.content : ""}</p>
+      <DocumentContent selectedDocument={props.selectedDocument} />
       <EntityList header="OpenNLP Results" entities={opennlp} />
       <EntityList header="Text Analytics Results" entities={textanalytics} />
     </div>
