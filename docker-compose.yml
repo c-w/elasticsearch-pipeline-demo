@@ -102,6 +102,7 @@ services:
       - azurestorage
 
   reactivesearch:
+    image: '${CONTAINER_REGISTRY_URL}/search-ui:${BUILD_TAG}'
     build: reactivesearch
     ports:
       - 3000:3000
