@@ -102,10 +102,6 @@ services:
       - azurestorage
 
   reactivesearch:
-    build:
-      context: reactivesearch
-      args:
-        REACT_APP_ELASTIC_INDEX: '${ELASTIC_SEARCH_INDEX_NAME}'
-        REACT_APP_ELASTIC_URL: 'http://localhost:9200'
+    build: reactivesearch
     ports:
       - 3000:3000

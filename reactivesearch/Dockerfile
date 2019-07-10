@@ -5,11 +5,6 @@ RUN wget https://github.com/m3ng9i/ran/releases/download/v0.1.4/ran_linux_arm64.
  && rm ran_linux_arm64.zip \
  && mv ran_linux_arm64 /ran
 
-ARG REACT_APP_ELASTIC_INDEX
-ARG REACT_APP_ELASTIC_URL
-ENV REACT_APP_ELASTIC_INDEX ${REACT_APP_ELASTIC_INDEX}
-ENV REACT_APP_ELASTIC_URL ${REACT_APP_ELASTIC_URL}
-
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
