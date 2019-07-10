@@ -1,7 +1,7 @@
 import React from "react";
 import map from "lodash.map";
 
-function DocumentView(props) {
+export default function DocumentView(props) {
   const opennlp = props.selectedDocument.opennlp
     ? props.selectedDocument.opennlp
     : {};
@@ -25,4 +25,3 @@ function DocumentView(props) {
     </div>
   );
 }
-export default DocumentView;

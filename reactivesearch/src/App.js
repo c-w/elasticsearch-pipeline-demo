@@ -9,7 +9,7 @@ import SearchResultList from "./components/SearchResultList";
 import DocumentView from "./components/DocumentView";
 import { getUrlParams } from "./utils";
 
-class App extends React.Component {
+export default class App extends React.Component {
   state = {
     selectedDocument: "",
     elastic_index: getUrlParams("appname"),
@@ -87,5 +87,3 @@ class App extends React.Component {
     );
   }
 }
-
-export default App;

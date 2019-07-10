@@ -1,6 +1,6 @@
 import React from "react";
 
-function SearchResultList(props) {
+export default function SearchResultList(props) {
   const response = props.response;
   return (
     <div>
@@ -13,4 +13,3 @@ function SearchResultList(props) {
     </div>
   );
 }
-export default SearchResultList;
