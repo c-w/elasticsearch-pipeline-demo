@@ -5,10 +5,6 @@ set -euo pipefail
 IFS=$'\n\t'
 
 
-# EXPORT ENVIRONMENT VARIABLES
-set -o allexport; source .env; set +o allexport
-
-
 # LOGIN TO CLUSTER
 oc login "$OC_MASTER_SERVER_DNS" \
     --username="$OC_USERNAME" \
@@ -16,6 +12,7 @@ oc login "$OC_MASTER_SERVER_DNS" \
     --insecure-skip-tls-verify=true
 
 
+# DELETE PROJECT FROM CLUSTER
 oc project default
 oc_project_name=$(cat project_to_delete.txt)
 oc delete project "$oc_project_name"

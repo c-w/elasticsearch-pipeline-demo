@@ -5,6 +5,14 @@ set -euo pipefail
 IFS=$'\n\t'
 
 
+# EXPORT ENVIRONMENT VARIABLES
+# Necessary because of bug (?) where kompose does not use .env
+# Additionally, using these variables in this script
+set -o allexport; source .env; set +o allexport
+BUILD_TAG=$(echo $BUILD_TAG | tr "/" "-")
+export BUILD_TAG
+
+
 delete_acr_images () {
     local status_code=$?
     az login --service-principal \
@@ -23,12 +31,12 @@ delete_acr_images () {
 }
 
 
-# EXPORT ENVIRONMENT VARIABLES
-# Necessary because of bug (?) where kompose does not use .env
-# Additionally, using these variables in this script
-set -o allexport; source .env; set +o allexport
-BUILD_TAG=$(echo $BUILD_TAG | tr "/" "-")
-export BUILD_TAG
+deploy_acr_auth () {
+    # ACR AUTH
+    oc apply -f acr-auth.yaml
+    oc secrets link default acr-auth --for=pull
+    oc secrets link builder acr-auth
+}
 
 
 # RUN UNIT TESTS
@@ -40,23 +48,14 @@ oc login "$OC_MASTER_SERVER_DNS" \
     --username="$OC_USERNAME" \
     --password="$OC_PASSWORD" \
     --insecure-skip-tls-verify=true
-
-
-# CREATE NEW PROJECT
-oc_project_name="ci-$BUILD_TAG"
-existing_project=$(oc get project | grep "$oc_project_name " || true)
-if [ "$existing_project" ]; then
-    oc project default
-    oc delete project "$oc_project_name"
-fi
-oc new-project "$oc_project_name"
+oc project default
 
 
 # ALLOW CONTAINERS TO RUN AS ROOT
 oc adm policy add-scc-to-user anyuid -z default
 
 
-# ADD ACR AUTH SECRET TO CLUSTER'S DEFAULT USERS
+# CREATE AUTH SECRET
 # Logging in creates ~/.docker/config.json with auth credentials
 docker login \
     --username "$SERVICE_PRINCIPAL_APP_ID" \
@@ -73,19 +72,36 @@ oc create secret docker-registry acr-auth \
     -o yaml \
 > acr-auth.yaml
 sed -i "s/  .dockerconfigjson.*/  .dockerconfigjson: $docker_config_b64/" acr-auth.yaml
-oc apply -f acr-auth.yaml
-rm acr-auth.yaml
-
-oc secrets link default acr-auth --for=pull
-oc secrets link builder acr-auth
 
 
-# PUSH IMAGES TO ACR AND DEPLOY TO CLUSTER
+# CREATE NEW PROJECT AND DEPLOY TO CLUSTER
+oc_project_name="ci-$BUILD_TAG"
+existing_project=$(oc get project | grep "$oc_project_name " || true)
+if [ "$existing_project" ]; then
+    oc project default
+    oc delete project "$oc_project_name"
+fi
+oc new-project "$oc_project_name"
+deploy_acr_auth
 kompose up --provider=openshift
 trap delete_acr_images EXIT
 
 
+# CREATE CLEANUP PROJECT AND DEPLOY TO CLUSTER
+oc_cleanup_project_name=cleanup
+existing_cleanup_project=$(oc get project | grep "$oc_cleanup_project_name " || true)
+if [ -z "$existing_cleanup_project" ]; then
+    oc new-project "$oc_cleanup_project_name"
+    deploy_acr_auth
+    kompose up -f docker-compose-cleanup.yml --provider=openshift
+    oc expose svc "$oc_cleanup_project_name"
+    echo "webhook URL: http://$(oc get route "$oc_cleanup_project_name" -o jsonpath='{.spec.host}')"
+    oc project "$oc_project_name"
+fi
+
+
 # RUN INTEGRATION TESTS
 # Simulating checking the status code of the integration test container with sleep
+oc project "$oc_project_name"
 sleep 10
 oc get all
