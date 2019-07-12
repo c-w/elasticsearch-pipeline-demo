@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM ubuntu:bionic AS builder
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -10,12 +10,15 @@ RUN curl -sSL https://github.com/openshift/origin/releases/download/v3.11.0/open
     mv openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit/oc /usr/local/bin && \
     rm -rf openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit
 
-# INSTALL GO
-RUN curl -fsSL https://dl.google.com/go/go1.12.7.linux-amd64.tar.gz | tar -v -C /usr/local -xz
-ENV PATH=$PATH:/usr/local/go/bin
+FROM python:3.7 AS runtime
 
-EXPOSE 8080
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+COPY --from=builder /usr/local/bin/kubectl /usr/local/bin/kubectl
+COPY --from=builder /usr/local/bin/oc /usr/local/bin/oc
+
+EXPOSE 8000
 COPY . /cleanup
 WORKDIR /cleanup
-RUN go build
-CMD ["./cleanup"]
+RUN pip3 install -r requirements.txt && chmod +x cleanup.sh
+CMD ["hug", "-f", "server.py"]

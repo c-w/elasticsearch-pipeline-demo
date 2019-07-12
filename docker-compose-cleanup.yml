@@ -6,7 +6,7 @@ services:
     image: '${CONTAINER_REGISTRY_URL}/cleanup:latest'
     build: cleanup
     ports:
-      - 8080:8080
+      - 8000:8000
     restart: always
     environment:
       OC_MASTER_SERVER_DNS: '${OC_MASTER_SERVER_DNS}'
