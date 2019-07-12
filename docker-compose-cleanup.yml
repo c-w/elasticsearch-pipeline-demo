@@ -9,6 +9,4 @@ services:
       - 8000:8000
     restart: always
     environment:
-      OC_MASTER_SERVER_DNS: '${OC_MASTER_SERVER_DNS}'
-      OC_USERNAME: '${OC_USERNAME}'
-      OC_PASSWORD: '${OC_PASSWORD}'
+      PYTHONUNBUFFERED: 1

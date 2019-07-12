@@ -89,6 +89,7 @@ trap delete_acr_images EXIT
 # CREATE CLEANUP PROJECT AND DEPLOY TO CLUSTER
 oc_cleanup_project_name=cleanup
 if ! oc get project | grep "$oc_cleanup_project_name " > /dev/null; then
+    cp /root/.kube/config cleanup/.kube/
     oc new-project "$oc_cleanup_project_name"
     deploy_acr_auth
     kompose up -f docker-compose-cleanup.yml --provider=openshift
