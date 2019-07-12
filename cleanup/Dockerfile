@@ -14,12 +14,14 @@ FROM python:3.7 AS runtime
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-COPY --from=builder /usr/local/bin/kubectl /usr/local/bin/kubectl
-COPY --from=builder /usr/local/bin/oc /usr/local/bin/oc
-
 EXPOSE 8000
-COPY . /cleanup
-RUN mkdir /root/.kube && mv /cleanup/.kube/config /root/.kube/config
+
+RUN useradd -ms /bin/bash cleaner
+COPY --from=builder --chown=cleaner:cleaner /usr/local/bin/kubectl /usr/local/bin/kubectl
+COPY --from=builder --chown=cleaner:cleaner /usr/local/bin/oc /usr/local/bin/oc
+COPY --chown=cleaner:cleaner . /cleanup
+RUN mkdir /home/cleaner/.kube && mv /cleanup/.kube/config /home/cleaner/.kube/config
 WORKDIR /cleanup
 RUN pip3 install -r requirements.txt
+USER cleaner
 CMD ["hug", "-f", "server.py"]
