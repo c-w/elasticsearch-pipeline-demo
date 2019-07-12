@@ -20,5 +20,6 @@ COPY --from=builder /usr/local/bin/oc /usr/local/bin/oc
 EXPOSE 8000
 COPY . /cleanup
 WORKDIR /cleanup
-RUN pip3 install -r requirements.txt && chmod +x cleanup.sh
-CMD ["hug", "-f", "server.py"]
+RUN pip3 install -r requirements.txt && \
+    chmod +x login.sh
+CMD ["/bin/bash", "-c", "./login.sh && hug -f server.py"]
