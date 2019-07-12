@@ -76,8 +76,7 @@ sed -i "s/  .dockerconfigjson.*/  .dockerconfigjson: $docker_config_b64/" acr-au
 
 # CREATE NEW PROJECT AND DEPLOY TO CLUSTER
 oc_project_name="ci-$BUILD_TAG"
-existing_project=$(oc get project | grep "$oc_project_name " || true)
-if [ "$existing_project" ]; then
+if oc get project | grep "$oc_project_name " > /dev/null; then
     oc project default
     oc delete project "$oc_project_name"
 fi
@@ -89,8 +88,7 @@ trap delete_acr_images EXIT
 
 # CREATE CLEANUP PROJECT AND DEPLOY TO CLUSTER
 oc_cleanup_project_name=cleanup
-existing_cleanup_project=$(oc get project | grep "$oc_cleanup_project_name " || true)
-if [ -z "$existing_cleanup_project" ]; then
+if ! oc get project | grep "$oc_cleanup_project_name " > /dev/null; then
     oc new-project "$oc_cleanup_project_name"
     deploy_acr_auth
     kompose up -f docker-compose-cleanup.yml --provider=openshift
