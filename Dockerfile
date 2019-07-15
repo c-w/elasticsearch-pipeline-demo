@@ -27,4 +27,5 @@ RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 COPY . /app
 WORKDIR /app
+RUN chmod +x ci.sh
 CMD ["./ci.sh"]

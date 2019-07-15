@@ -52,4 +52,4 @@ This command will:
 - Deploy the services to a new project in an OpenShift cluster.
 - Run all integration tests.
 - Delete the images on Azure Container Registry.
-- Delete the project on the cluster.
+- If non-existent, deploy a service for cleaning up merged PRs (outputing the exposed route to use with AZDO/Github web hooks).
