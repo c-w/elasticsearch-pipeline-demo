@@ -1,5 +1,5 @@
 {
-  "description": "Ingestion pipeline",
+  "description": "Azure Cognitive Search Pipeline",
   "processors": [
     {
       "azurestorage": {
@@ -12,12 +12,6 @@
       "attachment": {
         "field": "doc.raw",
         "target_field": "doc"
-      }
-    },
-    {
-      "opennlp": {
-        "field": "doc.content",
-        "target_field": "opennlp"
       }
     },
     {

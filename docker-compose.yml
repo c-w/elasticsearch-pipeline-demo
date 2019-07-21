@@ -3,24 +3,19 @@ version: '3'
 services:
 
   elasticsearch:
-    image: '${CONTAINER_REGISTRY_URL}/elasticsearch:${BUILD_TAG}'
     build: elasticsearch
     environment:
       discovery.type: 'single-node'
       http.port: '9200'
       http.cors.enabled: 'true'
-      http.cors.allow-origin: 'http://localhost:1358,http://127.0.0.1:1358,http://127.0.0.1:3000,http://localhost:3000'
-      http.cors.allow-headers: 'X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization,Access-Control-Allow-Headers,Accept'
+      http.cors.allow-origin: 'http://localhost:1358,http://127.0.0.1:1358'
+      http.cors.allow-headers: 'X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization'
       http.cors.allow-credentials: 'true'
       bootstrap.memory_lock: 'true'
       ES_JAVA_OPTS: '-Xms512m -Xmx512m'
       ingest.textanalytics.endpoint: 'http://textanalytics:5000'
       ingest.textanalytics.key: 'not-used'
       ingest.azurestorage.connectionstring: 'AccountName=${AZURE_STORAGE_ACCOUNT_NAME};AccountKey=${AZURE_STORAGE_ACCOUNT_KEY};BlobEndpoint=${AZURE_STORAGE_BLOB_ENDPOINT};'
-      ingest.opennlp.model.file.persons: 'en-ner-persons.bin'
-      ingest.opennlp.model.file.dates: 'en-ner-dates.bin'
-      ingest.opennlp.model.file.locations: 'en-ner-locations.bin'
-      ingest.opennlp.model.file.organizations: 'en-ner-organization.bin'
     ports:
       - 9200:9200
       - 9300:9300
@@ -29,17 +24,13 @@ services:
       - textanalytics
 
   elasticsearch-init:
-    image: '${CONTAINER_REGISTRY_URL}/elasticsearch-init:${BUILD_TAG}'
     build: devtool
-    restart: "no"
     command: >
       create-es-index
       create-es-pipeline --path /app/ingestion.json
       create-es-document --blob hello.docx --container '${AZURE_STORAGE_CONTAINER}'
       create-es-document --blob hello.pdf --container '${AZURE_STORAGE_CONTAINER}'
       create-es-document --blob opennlp.txt --container '${AZURE_STORAGE_CONTAINER}'
-      create-es-document --blob structured_doc.docx --container '${AZURE_STORAGE_CONTAINER}'
-      create-es-document --blob structured_doc.pdf --container '${AZURE_STORAGE_CONTAINER}'
     environment:
       ES_HOST: 'elasticsearch'
       ES_PORT: '9200'
@@ -49,13 +40,11 @@ services:
       - elasticsearch
 
   elasticsearch-ui:
-    image: '${CONTAINER_REGISTRY_URL}/elasticsearch-ui:${BUILD_TAG}'
-    build: rawimages/elasticsearch-ui
+    image: appbaseio/dejavu:3.3.1
     ports:
       - 1358:1358
 
   textanalytics:
-    image: '${CONTAINER_REGISTRY_URL}/textanalytics:${BUILD_TAG}'
     build: textanalytics
     ports:
       - 5000:5000
@@ -69,22 +58,19 @@ services:
       - textanalytics-sentiment
 
   textanalytics-sentiment:
-    image: '${CONTAINER_REGISTRY_URL}/textanalytics-sentiment:${BUILD_TAG}'
-    build: rawimages/textanalytics-sentiment
+    image: mcr.microsoft.com/azure-cognitive-services/sentiment:latest
     command: ['Eula=accept', 'Billing=${AZURE_TEXT_ANALYTICS_ENDPOINT}', 'ApiKey=${AZURE_TEXT_ANALYTICS_KEY}']
     ports:
       - 5001:5000
 
   textanalytics-keyphrases:
-    image: '${CONTAINER_REGISTRY_URL}/textanalytics-keyphrases:${BUILD_TAG}'
-    build: rawimages/textanalytics-keyphrases
+    image: mcr.microsoft.com/azure-cognitive-services/keyphrase:latest
     command: ['Eula=accept', 'Billing=${AZURE_TEXT_ANALYTICS_ENDPOINT}', 'ApiKey=${AZURE_TEXT_ANALYTICS_KEY}']
     ports:
       - 5002:5000
 
   azurestorage:
-    image: '${CONTAINER_REGISTRY_URL}/azurestorage:${BUILD_TAG}'
-    build: rawimages/azurestorage
+    image: mcr.microsoft.com/azure-blob-storage:latest
     environment:
       LOCAL_STORAGE_ACCOUNT_NAME: '${AZURE_STORAGE_ACCOUNT_NAME}'
       LOCAL_STORAGE_ACCOUNT_KEY: '${AZURE_STORAGE_ACCOUNT_KEY}'
@@ -92,17 +78,9 @@ services:
       - 11002:11002
 
   azurestorage-init:
-    image: '${CONTAINER_REGISTRY_URL}/azurestorage-init:${BUILD_TAG}'
     build: azurestorage
-    restart: "no"
     environment:
       AZURE_STORAGE_CONNECTION_STRING: 'AccountName=${AZURE_STORAGE_ACCOUNT_NAME};AccountKey=${AZURE_STORAGE_ACCOUNT_KEY};BlobEndpoint=${AZURE_STORAGE_BLOB_ENDPOINT};'
       AZURE_STORAGE_CONTAINER: '${AZURE_STORAGE_CONTAINER}'
     depends_on:
       - azurestorage
-
-  reactivesearch:
-    image: '${CONTAINER_REGISTRY_URL}/search-ui:${BUILD_TAG}'
-    build: reactivesearch
-    ports:
-      - 3000:3000
